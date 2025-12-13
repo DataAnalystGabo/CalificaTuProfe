@@ -17,24 +17,24 @@ function App() {
             <MobileMenu isOpen={isMenuOpen} onClose={toggleMenu} />
 
             {/* Sección Principal (Main) */}
-            <main className="w-full max-w-7xl mx-auto h-full overflow-hidden max-h-[80vh]">
+            <main className="w-full max-w-7xl mx-auto h-full overflow-hidden max-h-[80vh] bg-stone-50">
 
                 <div className="max-w-lg mx-auto p-4 relative">
 
                     {/* Texto principal (z-20 para estar por encima de todo) */}
                     <div className="relative z-20 flex flex-col items-center justify-center min-h-[calc(100vh-64px)] w-full p-6 text-center">
                         <h2 className="text-5xl font-extrabold mb-4 leading-snug text-stone-700">
-                            Descubre la verdad sobre cada clase.
+                            Descubrí la verdad sobre cada clase.
                         </h2>
                         <p className="text-lg mb-8 max-w-sm text-stone-500">
                             La plataforma anónima donde los estudiantes evalúan a sus profesores, tal como ellos a nosotros.
                         </p>
                         <a 
                             href="#" 
-                            className="bg-white text-indigo-600 text-lg font-medium px-8 py-3 rounded-xl hover:bg-gray-100 transition duration-150 shadow-lg"
+                            className="bg-sky-400 border-1 border-sky-500 text-white text-lg font-medium px-8 py-3 rounded-xl hover:bg-sky-500 transition duration-150 shadow-lg"
                             onClick={() => console.log('CTA Principal: Registro')}
                         >
-                            Comienza Ahora
+                            Ver reseñas
                         </a>
                     </div>
 
@@ -46,7 +46,7 @@ function App() {
                             subjectName={"Comercio Electrónico"}
                             qcomment={"+15 reseñas"}
                             comment={"Sus clases son un placer."}
-                            rating={2}
+                            rating={4}
                         />
                     </div>
 
@@ -57,8 +57,8 @@ function App() {
                             university={"UNAB"}
                             subjectName={"Inteligencia Artificial"}
                             qcomment={"+25 reseñas"}
-                            comment={"Se destaca por su brillantez en cada clase."}
-                            rating={4}
+                            comment={"Su forma de explicar los conceptos es incomparable."}
+                            rating={3}
                         />
                     </div>
 
@@ -69,8 +69,8 @@ function App() {
                             university={"UNAB"}
                             subjectName={"Inf. Estad. & Rec. de Patrones"}
                             qcomment={"+5 reseñas"}
-                            comment={"Se destacar por su rigurosidad matemática en cada clase."}
-                            rating={2}
+                            comment={"Flor es extremadamente rigurosa al describir las matemáticas."}
+                            rating={5}
                         />
                     </div>
 
