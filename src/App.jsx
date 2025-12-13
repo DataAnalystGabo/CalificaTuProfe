@@ -31,7 +31,7 @@ function App() {
                         </p>
                         <a 
                             href="#" 
-                            className="bg-sky-400 border-1 border-sky-500 text-white text-lg font-medium px-8 py-3 rounded-xl hover:bg-sky-500 transition duration-150 shadow-lg"
+                            className="bg-sky-500 border border-sky-500 text-white text-lg font-medium px-8 py-3 rounded-xl hover:bg-sky-400 transition duration-150 shadow-lg"
                             onClick={() => console.log('CTA Principal: Registro')}
                         >
                             Ver reseñas
