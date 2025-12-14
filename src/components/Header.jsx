@@ -9,7 +9,7 @@ const MenuIcon = () => (
 
 export default function Header({ onMenuToggle }) {
     return (
-        <header className="bg-white shadow-md p-4 sticky top-0 z-20">
+        <header className="bg-white shadow-md w-full p-4 fixed top-0 z-30">
             <div className="max-w-6xl mx-auto flex justify-between items-center">
                 {/* Título de la App */}
                 <h1 className="text-xl font-bold text-stone-700">

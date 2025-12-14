@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Header from './components/Header';
 import MobileMenu from './components/MobileMenu';
 import Target from './components/Target';
+import PillBadge from './components/PillBadge';
 
 function App() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,7 +14,7 @@ function App() {
         <div className="min-h-screen flex flex-col">
             
             {/* Componentes de Navegación */}
-            <Header onMenuToggle={toggleMenu} />
+            <Header onMenuToggle={toggleMenu}/>
             <MobileMenu isOpen={isMenuOpen} onClose={toggleMenu} />
 
             {/* Sección Principal (Main) */}
@@ -89,11 +90,20 @@ function App() {
             </main>
             
             <section className="w-full max-w-7xl mx-auto py-16 bg-white">
-                <div className="max-w-lg mx-auto p-4 text-center">
-                    <h2 className="text-3xl font-extrabold mb-4 text-stone-700">
-                        Nuestra misión es una
+                <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
+
+                    <h2 className="text-4xl font-extrabold mb-4 text-stone-700">
+                        Nuestra misión
                     </h2>
-                    <p className="text-lg mb-8 text-stone-500">
+
+                    <PillBadge
+                        text="Equilibrando poderes"
+                        bgColor="bg-emerald-100"
+                        borderColor="border-emerald-500"
+                        textColor="text-emerald-800"
+                    />
+
+                    <p className="text-lg mt-4 mb-8 text-stone-500">
                         ¿Cuántas veces callaste una crítica constructiva por miedo a un impacto negativo en tu nota o relación con un docente? El desequilibrio de poder actual obliga a la obediencia sobre la honestidad. Nosotros rompemos esa regla. Nuestra plataforma te da la <strong>libertad de ser brutalmente honesto</strong> —o genuinamente elogioso— <strong>sin revelar tu identidad</strong>. Desde el anonimato, empoderamos al alumno, y trabajamos por una relación profesor-estudiante de excelencia basada en la calidad pedagógica y el respeto mutuo. 
                     </p>
                 </div>
