@@ -6,7 +6,7 @@ import { FaBook, FaUniversity, FaComment } from "react-icons/fa";
 const StarRating = ({ 
     rating =  0, 
     maxRating = 5,
-    filledColor = "text-stone-500",
+    filledColor = "text-yellow-400",
     emptyColor = "text-stone-300"
 
 }) => {

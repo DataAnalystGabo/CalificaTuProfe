@@ -88,7 +88,16 @@ function App() {
                 </div>
             </main>
             
-            {/* Puedes agregar aquí más secciones de la Landing Page */}
+            <section className="w-full max-w-7xl mx-auto py-16 bg-white">
+                <div className="max-w-lg mx-auto p-4 text-center">
+                    <h2 className="text-3xl font-extrabold mb-4 text-stone-700">
+                        Nuestra misión es una
+                    </h2>
+                    <p className="text-lg mb-8 text-stone-500">
+                        ¿Cuántas veces callaste una crítica constructiva por miedo a un impacto negativo en tu nota o relación con un docente? El desequilibrio de poder actual obliga a la obediencia sobre la honestidad. Nosotros rompemos esa regla. Nuestra plataforma te da la <strong>libertad de ser brutalmente honesto</strong> —o genuinamente elogioso— <strong>sin revelar tu identidad</strong>. Desde el anonimato, empoderamos al alumno, y trabajamos por una relación profesor-estudiante de excelencia basada en la calidad pedagógica y el respeto mutuo. 
+                    </p>
+                </div>
+            </section>
             
         </div>
     );
