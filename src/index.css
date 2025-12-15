@@ -4,3 +4,130 @@
 body {
     font-family: "Google Sans", sans-serif;
 }
+
+@layer utilities {
+    .animate-fade-target-1 {
+        animation: fade-target-1 1s ease-out forwards;
+    }
+    .animate-fade-target-2 {
+        animation: fade-target-2 1.5s ease-out forwards;
+    }
+    .animate-fade-target-3 {
+        animation: fade-target-3 1s ease-out forwards;
+    }
+    .animate-fade-target-4 {
+        animation: fade-target-4 1.7s ease-out forwards;
+    }
+    .animate-delay-300 {
+        animation-delay: .3s;
+    }
+    .animate-delay-500 {
+        animation-delay: .5s;
+    }
+    .animate-fade-in-from {
+        animation: fade-in-from 1s ease-in forwards;
+    }
+    .animate-typewriter {
+        max-width: fit-content;
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: 0.05em solid gray;
+        animation:
+            typing 1.7s steps(40, end) forwards,
+            blink .75s step-end infinite;
+    }
+    .animate-slide-left {
+        animation: slide-in-from-left 1s ease-out forwards;
+    }
+    .animate-slide-right {
+        animation: slide-in-from-right 1s ease-out forwards;
+    }
+}
+
+@keyframes fade-target-1 {
+    0% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(150px);
+    }
+}
+
+@keyframes fade-target-2 {
+    0% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-200px);
+    }
+}
+
+@keyframes fade-target-3 {
+    0% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(180px);
+    }
+}
+
+@keyframes fade-target-4 {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(-60px);
+    }
+}
+
+@keyframes fade-in-from {
+    0% {
+        transform: scale(.7);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Animación efecto máquina de escribir */
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+/* Animación del cursor */
+@keyframes blink {
+    50% { border-color: transparent }
+}
+
+@keyframes slide-in-from-left {
+    0% {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-in-from-right {
+    0% {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
