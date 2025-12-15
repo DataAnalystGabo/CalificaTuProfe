@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FaHeadSideCough } from "react-icons/fa6";
 import Header from './components/Header';
 import MobileMenu from './components/MobileMenu';
 import Target from './components/Target';
@@ -133,8 +134,25 @@ function App() {
                         ¿Cuántas veces callaste una crítica constructiva por miedo a un impacto negativo en tu nota o relación con un docente? El desequilibrio de poder actual obliga a la obediencia sobre la honestidad. Nosotros rompemos esa regla. Nuestra plataforma te da la <strong>libertad de ser brutalmente honesto</strong> —o genuinamente elogioso— <strong>sin revelar tu identidad</strong>. Desde el anonimato, empoderamos al alumno, y trabajamos por una relación profesor-estudiante de excelencia basada en la calidad pedagógica y el respeto mutuo. 
                     </p>
                 </div>
+
+                <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
+
+                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
+                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Vos sos anónimo</h2>
+
+                    <PillBadge
+                        icon={FaHeadSideCough}
+                        text="Promoviendo la libertad de expresión"
+                        bgColor="bg-violet-100"
+                        borderColor="border-violet-500"
+                        textColor="text-violet-800"
+                    />
+
+                    <p className="text-lg mt-4 mb-8 text-stone-500">
+                        <strong>CalificáTuProfe garantiza la anonimidad</strong> para quienes leen o dejan una reseña. No recopilamos ni publicamos tus datos. <strong>Sos libre, sos anónimo</strong> y tenés la posibilidad de construir una comunidad que ayude a premiar el trabajo de quienes tienen la enorme tarea de transmitir su conocimiento y a mejorar su desempeño en el aula con críticas constructivas. 
+                    </p>
+                </div>
             </section>
-            
         </div>
     );
 }
