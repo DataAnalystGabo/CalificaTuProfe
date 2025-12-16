@@ -5,6 +5,7 @@ import Header from './components/Header';
 import MobileMenu from './components/MobileMenu';
 import Target from './components/Target';
 import PillBadge from './components/PillBadge';
+import ReviewsCarousel from './components/ReviewsCarousel';
 
 function App() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -171,6 +172,14 @@ function App() {
                         Nunca más tendrás que inscribirte en una clase sin saber a lo que te enfrentas. <strong>Accede a miles de reseñas honestas que te permiten anticipar y planificar tu camino académico.</strong> Elige a los profesores que genuinamente inspiran y evita aquellos que dificultan tu progreso. Tu participación anónima genera una herramienta colectiva que beneficia a toda la comunidad. Juntos, elevamos el nivel de exigencia, empujando a la universidad hacia la excelencia académica.
                     </p>
                 </div>
+            </section>
+
+            <section className="w-full py-16 bg-stone-50 overflow-hidden mb-10">
+                <div className="max-w-7xl mx-auto px-4 mb-8 text-center">
+                    <h3 className="text-3xl font-bold text-stone-700">Lo que dicen los estudiantes</h3>
+                </div>
+
+                <ReviewsCarousel/>
             </section>
         </div>
     );

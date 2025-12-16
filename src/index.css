@@ -42,6 +42,9 @@ body {
     .animate-slide-right {
         animation: slide-in-from-right 1s ease-out forwards;
     }
+    .animate-infinite-scroll {
+        animation: infinite-scroll 35s linear infinite
+    }
 }
 
 @keyframes fade-target-1 {
@@ -129,5 +132,14 @@ body {
     100% {
         opacity: 1;
         transform: translateX(0);
+    }
+}
+
+@keyframes infinite-scroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
     }
 }
