@@ -24,7 +24,7 @@ function App() {
                 }
             }, {
                 threshold: 0,
-                rootMargin: "0px 0px 250px 0px"
+                rootMargin: "0px 0px 800px 0px"
             });
 
             if (ref.current) {
@@ -157,7 +157,7 @@ function App() {
                 <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
 
                     <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
-                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Decisiones Informadas</h2>
+                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Decisiones Justas</h2>
 
                     <PillBadge
                         icon={FaCompassDrafting}
