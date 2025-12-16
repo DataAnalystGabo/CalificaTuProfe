@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaHeadSideCough } from "react-icons/fa6";
+import { FaCompassDrafting } from "react-icons/fa6";
 import Header from './components/Header';
 import MobileMenu from './components/MobileMenu';
 import Target from './components/Target';
@@ -22,8 +23,8 @@ function App() {
                     observer.disconnect();
                 }
             }, {
-                threshold: 0.5,
-                rootMargin: "0px 0px -100px 0px"
+                threshold: 0,
+                rootMargin: "0px 0px 250px 0px"
             });
 
             if (ref.current) {
@@ -121,24 +122,24 @@ function App() {
                 <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
 
                     <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
-                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Nuestra misión</h2>
+                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Asimetría de Poder</h2>
 
                     <PillBadge
-                        text="Equilibrando poderes"
+                        text="Buscando el equilibrio"
                         bgColor="bg-emerald-100"
                         borderColor="border-emerald-500"
                         textColor="text-emerald-800"
                     />
 
                     <p className="text-lg mt-4 mb-8 text-stone-500">
-                        ¿Cuántas veces callaste una crítica constructiva por miedo a un impacto negativo en tu nota o relación con un docente? El desequilibrio de poder actual obliga a la obediencia sobre la honestidad. Nosotros rompemos esa regla. Nuestra plataforma te da la <strong>libertad de ser brutalmente honesto</strong> —o genuinamente elogioso— <strong>sin revelar tu identidad</strong>. Desde el anonimato, empoderamos al alumno, y trabajamos por una relación profesor-estudiante de excelencia basada en la calidad pedagógica y el respeto mutuo. 
+                        <strong>¿Alguna vez quisiste dar una crítica constructiva y sincera pero te detuvo el miedo?</strong> La relación en el ámbito universitario a menudo es una calle de sentido único: el profesor evalúa tu futuro, mientras tu experiencia se queda sin voz. Este desbalance fomenta el silencio y la resignación ante la baja calidad pedagógica. Esto no solo es injusto para el estudiante, sino que degrada la excelencia en la enseñanza. <strong>Es hora de darle la vuelta a esa dinámica.</strong>
                     </p>
                 </div>
 
                 <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
 
                     <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
-                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Vos sos anónimo</h2>
+                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Anonimidad Total</h2>
 
                     <PillBadge
                         icon={FaHeadSideCough}
@@ -149,7 +150,25 @@ function App() {
                     />
 
                     <p className="text-lg mt-4 mb-8 text-stone-500">
-                        <strong>CalificáTuProfe garantiza la anonimidad</strong> para quienes leen o dejan una reseña. No recopilamos ni publicamos tus datos. <strong>Sos libre, sos anónimo</strong> y tenés la posibilidad de construir una comunidad que ayude a premiar el trabajo de quienes tienen la enorme tarea de transmitir su conocimiento y a mejorar su desempeño en el aula con críticas constructivas. 
+                        <strong>Nuestra misión es simple: construir un ecosistema académico basado en la transparencia.</strong> Hemos creado un espacio donde tu experiencia tiene un peso real, sin riesgo personal alguno. Garantizamos el anonimato total de cada reseña para que la sinceridad sea tu única preocupación. Al empoderar a miles de alumnos anónimos, la calidad pedagógica se convierte en el nuevo estándar. Es la libertad de expresión, finalmente, aplicada a tu educación. 
+                    </p>
+                </div>
+
+                <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
+
+                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
+                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Decisiones Informadas</h2>
+
+                    <PillBadge
+                        icon={FaCompassDrafting}
+                        text="Democratizando la información"
+                        bgColor="bg-amber-100"
+                        borderColor="border-amber-500"
+                        textColor="text-amber-800"
+                    />
+
+                    <p className="text-lg mt-4 mb-8 text-stone-500">
+                        Nunca más tendrás que inscribirte en una clase sin saber a lo que te enfrentas. <strong>Accede a miles de reseñas honestas que te permiten anticipar y planificar tu camino académico.</strong> Elige a los profesores que genuinamente inspiran y evita aquellos que dificultan tu progreso. Tu participación anónima genera una herramienta colectiva que beneficia a toda la comunidad. Juntos, elevamos el nivel de exigencia, empujando a la universidad hacia la excelencia académica.
                     </p>
                 </div>
             </section>
