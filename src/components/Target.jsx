@@ -36,11 +36,19 @@ export default function Target({
     subjectName,
     university,
     emptyColor,
-    filledColor
+    filledColor,
+    shadow = true
 }) {
     return (
 
-        <div className="bg-white p-4 rounded-lg shadow-2xl border border-stone-500 transition duration-300 hover:shadow-xl w-75 h-full flex flex-col">
+        <div className={`
+            bg-white p-4 rounded-lg border border-stone-500 w-72 h-full flex flex-col
+            transition-all duration-300 ease-in-out
+            ${shadow 
+                ? 'shadow-md hover:shadow-xl hover:-translate-y-1' /* Efecto Levitar */
+                : 'shadow-none'
+            }
+        `}>
 
             {/* Encabezado de la tarjeta (usuario y calificacion) */}
             <div className="flex items-center justify-between mb-2 pb-2 border-b border-stone-300">

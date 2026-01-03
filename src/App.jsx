@@ -120,7 +120,7 @@ function App() {
             </main>
             
             <section className="w-full max-w-7xl mx-auto py-16 bg-white">
-                <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
+                <div className="max-w-lg mx-auto p-4 text-left flex flex-col items-start">
 
                     <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
                     isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Asimetría de Poder</h2>
@@ -132,12 +132,12 @@ function App() {
                         textColor="text-emerald-800"
                     />
 
-                    <p className="text-lg mt-4 mb-8 text-stone-500">
+                    <p className="text-lg mt-4 mb-8 text-left text-stone-500">
                         <strong>¿Alguna vez quisiste dar una crítica constructiva y sincera pero te detuvo el miedo?</strong> La relación en el ámbito universitario a menudo es una calle de sentido único: el profesor evalúa tu futuro, mientras tu experiencia se queda sin voz. Este desbalance fomenta el silencio y la resignación ante la baja calidad pedagógica. Esto no solo es injusto para el estudiante, sino que degrada la excelencia en la enseñanza. <strong>Es hora de darle la vuelta a esa dinámica.</strong>
                     </p>
                 </div>
 
-                <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
+                <div className="max-w-lg mx-auto p-4 text-left flex flex-col items-start">
 
                     <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
                     isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Anonimidad Total</h2>
@@ -150,12 +150,12 @@ function App() {
                         textColor="text-violet-800"
                     />
 
-                    <p className="text-lg mt-4 mb-8 text-stone-500">
+                    <p className="text-lg mt-4 mb-8 text-left text-stone-500">
                         <strong>Nuestra misión es simple: construir un ecosistema académico basado en la transparencia.</strong> Hemos creado un espacio donde tu experiencia tiene un peso real, sin riesgo personal alguno. Garantizamos el anonimato total de cada reseña para que la sinceridad sea tu única preocupación. Al empoderar a miles de alumnos anónimos, la calidad pedagógica se convierte en el nuevo estándar. Es la libertad de expresión, finalmente, aplicada a tu educación. 
                     </p>
                 </div>
 
-                <div className="max-w-lg mx-auto p-4 text-center flex flex-col items-center">
+                <div className="max-w-lg mx-auto p-4 text-left flex flex-col items-start">
 
                     <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
                     isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Decisiones Justas</h2>
@@ -168,13 +168,13 @@ function App() {
                         textColor="text-amber-800"
                     />
 
-                    <p className="text-lg mt-4 mb-8 text-stone-500">
+                    <p className="text-lg mt-4 mb-8 text-left text-stone-500">
                         Nunca más tendrás que inscribirte en una clase sin saber a lo que te enfrentas. <strong>Accede a miles de reseñas honestas que te permiten anticipar y planificar tu camino académico.</strong> Elige a los profesores que genuinamente inspiran y evita aquellos que dificultan tu progreso. Tu participación anónima genera una herramienta colectiva que beneficia a toda la comunidad. Juntos, elevamos el nivel de exigencia, empujando a la universidad hacia la excelencia académica.
                     </p>
                 </div>
             </section>
 
-            <section className="w-full py-16 bg-stone-50 overflow-hidden mb-10">
+            <section className="w-full max-w-7xl mx-auto py-16 bg-stone-50 overflow-hidden mb-10">
                 <div className="max-w-7xl mx-auto px-4 mb-8 text-center">
                     <h3 className="text-3xl font-bold text-stone-700">Lo que dicen los estudiantes</h3>
                 </div>
