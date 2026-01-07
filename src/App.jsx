@@ -6,6 +6,7 @@ import MobileMenu from './components/MobileMenu';
 import Target from './components/Target';
 import PillBadge from './components/PillBadge';
 import ReviewsCarousel from './components/ReviewsCarousel';
+import logoWhite from './assets/logo-white.svg'
 
 function App() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,9 +55,9 @@ function App() {
 
                     {/* Texto principal (z-20 para estar por encima de todo) */}
                     <div className="relative z-20 flex flex-col items-center justify-center min-h-[calc(100vh-64px)] w-full p-6 text-center">
-                        <h2 className="text-5xl font-extrabold mb-4 leading-snug text-stone-700 animate-slide-right">
+                        <h1 className="text-5xl font-extrabold mb-4 leading-snug text-stone-700 animate-slide-right">
                             Descubrí la verdad sobre cada clase.
-                        </h2>
+                        </h1>
                         <p className="text-lg mb-8 max-w-sm text-stone-500 animate-delay-500 animate-slide-left">
                             La plataforma anónima donde los estudiantes evalúan a sus profesores, tal como ellos a nosotros.
                         </p>
@@ -181,6 +182,65 @@ function App() {
 
                 <ReviewsCarousel/>
             </section>
+
+            <footer className="bg-stone-900 text-stone-400 py-12 border-t border-stone-800">
+                <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+                    
+                    {/* Columna 1: Marca y Misión */}
+                    <div className="col-span-1 md:col-span-2">
+                        <a 
+                            href="/"
+                            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                            aria-label="CalificáTuProfe - Inicio"
+                        >
+                            <img 
+                                src={logoWhite} 
+                                alt="Logo de CalificáTuProfe"
+                                className="h-10 w-auto"
+                            />
+                        </a>
+                        <p className="mb-6 mt-6 max-w-sm leading-relaxed">
+                            Democratizando la educación universitaria a través de la transparencia. 
+                            Una plataforma hecha por estudiantes, para estudiantes.
+                        </p>
+                        {/* Redes Sociales (Ejemplos visuales) */}
+                        <div className="flex space-x-4">
+                            <a href="#" className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-all duration-300">
+                                <span className="font-bold text-lg">X</span>
+                            </a>
+                            <a href="#" className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all duration-300">
+                                <span className="font-bold text-lg">Ig</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Columna 2: Plataforma */}
+                    <div>
+                        <h5 className="text-stone-100 font-bold mb-4 uppercase tracking-wider text-xs">Plataforma</h5>
+                        <ul className="space-y-3">
+                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Buscar Profesores</a></li>
+                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Escribir una Reseña</a></li>
+                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Ranking de Universidades</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Columna 3: Legal y Soporte */}
+                    <div>
+                        <h5 className="text-stone-100 font-bold mb-4 uppercase tracking-wider text-xs">Comunidad</h5>
+                        <ul className="space-y-3">
+                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Normas de la Comunidad</a></li>
+                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Política de Privacidad</a></li>
+                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Términos de Uso</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Barra inferior de Copyright */}
+                <div className="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-stone-800 flex flex-col md:flex-row justify-between items-center text-sm text-stone-500">
+                    <p>&copy; {new Date().getFullYear()} CalificáTuProfe. Todos los derechos reservados.</p>
+                    <p className="mt-2 md:mt-0">Diseñado con honestidad.</p>
+                </div>
+            </footer>
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import logoBlack from "../assets/logo-black.svg";
 
 // Icono del menú
 const MenuIcon = () => (
@@ -12,9 +13,17 @@ export default function Header({ onMenuToggle }) {
         <header className="bg-white shadow-md w-full p-4 fixed top-0 z-30">
             <div className="max-w-6xl mx-auto flex justify-between items-center">
                 {/* Título de la App */}
-                <h1 className="text-xl font-bold text-stone-700">
-                    CalificáTuProfe
-                </h1>
+                <a 
+                    href="/"
+                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    aria-label="CalificáTuProfe - Inicio"
+                >
+                    <img 
+                        src={logoBlack} 
+                        alt="Logo de CalificáTuProfe"
+                        className="h-8 w-auto"
+                    />
+                </a>
 
                 {/* Icono de Menu para Mobile */}
                 <button
