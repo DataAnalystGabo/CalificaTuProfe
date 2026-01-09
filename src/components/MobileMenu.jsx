@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 // Icono de cierre
 const CloseIcon = () => (
@@ -8,16 +8,6 @@ const CloseIcon = () => (
 );
 
 export default function MobileMenu({ isOpen, onClose }) {
-    // Bloquear el scroll del body cuando el menú está abierto
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else  {
-            document.body.style.overflow = "unset";
-        }
-        return () => { document.body.style.overflow = "unset"; };
-    }, [isOpen]);
-
     return (
         <>
             {/* 1. OVERLAY (El fondo oscuro semitransparente) */}
@@ -47,27 +37,27 @@ export default function MobileMenu({ isOpen, onClose }) {
 
                 {/* Lista de Enlaces */}
                 <nav className="flex flex-col p-6 space-y-6">
-                    <a 
-                        href="#" 
-                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                    <Link
+                        to="/login"
                         onClick={onClose}
+                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
                     >
                         Iniciar Sesión
-                    </a>
-                    <a 
-                        href="#" 
-                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                    </Link>
+                    <Link
+                        to="/registro"
                         onClick={onClose}
+                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
                     >
                         Registrarse
-                    </a>
-                    <a 
-                        href="#" 
-                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                    </Link>
+                    <Link
+                        to="/acerca"
                         onClick={onClose}
+                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
                     >
                         Acerca de
-                    </a>
+                    </Link>
                 </nav>
             </div>
         </>

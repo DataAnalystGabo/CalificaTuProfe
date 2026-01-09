@@ -1,9 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
 @import "tailwindcss";
 
-html {
+/* estilo que reserva el espacio del ancho de la barra del scroll para evitar saltos al abrir el menu desplegable */
+/* html {
     scrollbar-gutter: stable;
-}
+} */
 
 body {
     font-family: "Google Sans", sans-serif;
