@@ -183,17 +183,17 @@ export default function LandingPage() {
                     
                     {/* Columna 1: Marca y Misión */}
                     <div className="col-span-1 md:col-span-2">
-                        <a 
-                            href="/"
+                        <Link
+                            to="/"
                             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                             aria-label="CalificáTuProfe - Inicio"
                         >
                             <img 
                                 src={logoWhite} 
                                 alt="Logo de CalificáTuProfe"
-                                className="h-10 w-auto"
+                                className="h-10 w-auto" 
                             />
-                        </a>
+                        </Link>
                         <p className="mb-6 mt-6 max-w-sm leading-relaxed">
                             Democratizando la educación universitaria a través de la transparencia. 
                             Una plataforma hecha por estudiantes, para estudiantes.
@@ -213,9 +213,21 @@ export default function LandingPage() {
                     <div>
                         <h5 className="text-stone-100 font-bold mb-4 uppercase tracking-wider text-xs">Plataforma</h5>
                         <ul className="space-y-3">
-                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Buscar Profesores</a></li>
-                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Escribir una Reseña</a></li>
-                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Ranking de Universidades</a></li>
+                            <li>
+                                <Link to="/explorar" className="hover:text-sky-400 transition-colors duration-200">
+                                    Buscar Profesores
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/escribir" className="hover:text-sky-400 transition-colors duration-200">
+                                    Escribir una Reseña
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="ranking" className="hover:text-sky-400 transition-colors duration-200">
+                                    Ranking de Universidades
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
@@ -223,9 +235,21 @@ export default function LandingPage() {
                     <div>
                         <h5 className="text-stone-100 font-bold mb-4 uppercase tracking-wider text-xs">Comunidad</h5>
                         <ul className="space-y-3">
-                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Normas de la Comunidad</a></li>
-                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Política de Privacidad</a></li>
-                            <li><a href="#" className="hover:text-sky-400 transition-colors duration-200">Términos de Uso</a></li>
+                            <li>
+                                <Link to="/normas" className="hover:text-sky-400 transition-colors duration-200">
+                                    Normas de la Comunidad
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/politicas" className="hover:text-sky-400 transition-colors duration-200">
+                                    Política de Privacidad
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="terminos" className="hover:text-sky-400 transition-colors duration-200">
+                                    Términos de Uso
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                 </div>
