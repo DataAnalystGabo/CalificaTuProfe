@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // Icono de cierre
 const CloseIcon = () => (
@@ -8,46 +8,68 @@ const CloseIcon = () => (
 );
 
 export default function MobileMenu({ isOpen, onClose }) {
-    // Clase de Tailwind para controlar la visibilidad y transición del menú
-    const menuClasses = `fixed top-0 left-0 h-full w-64 bg-indigo-700 z-50 transform transition-transform duration-300 ease-in-out shadow-2xl ${
-        isOpen ? 'translate-x-0': '-translate-x-full'
-    } `;
+    // Bloquear el scroll del body cuando el menú está abierto
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else  {
+            document.body.style.overflow = "unset";
+        }
+        return () => { document.body.style.overflow = "unset"; };
+    }, [isOpen]);
 
     return (
         <>
-            {/* El menú desplegable */}
-            <div className={menuClasses}>
-                <div className="p-4 flex justify-end">
-                    <button
+            {/* 1. OVERLAY (El fondo oscuro semitransparente) */}
+            <div 
+                className={`fixed inset-0 z-40 bg-stone-900/20 backdrop-blur-xs transition-opacity duration-300 ${
+                    isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={onClose} // Cierra al hacer click fuera
+            />
+
+            {/* 2. SIDEBAR (El panel deslizante) */}
+            <div 
+                className={`fixed top-0 right-0 z-50 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
+                    isOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}
+            >
+                {/* Cabecera del Sidebar */}
+                <div className="flex items-center justify-between p-4 border-b border-stone-200">
+                    <span className="font-bold text-stone-700 text-lg">Menú</span>
+                    <button 
                         onClick={onClose}
-                        className="text-white p-1 hover:bg-indigo-600 rounded-md transition duration-150"
-                        aria-label="Cerrar menú"
+                        className="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
                     >
-                        <CloseIcon />
+                        <CloseIcon size={24} />
                     </button>
                 </div>
 
-                { /* Items del menú */}
-                <nav className="flex flex-col p-4 space-y-2">
-                    <a href="#" className="text-white text-lg font-medium p-2 rounded hover:bg-indigo-600">
+                {/* Lista de Enlaces */}
+                <nav className="flex flex-col p-6 space-y-6">
+                    <a 
+                        href="#" 
+                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                        onClick={onClose}
+                    >
                         Iniciar Sesión
                     </a>
-                    <a href="#" className="text-white text-lg font-medium p-2 rounded hover:bg-indigo-600">
+                    <a 
+                        href="#" 
+                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                        onClick={onClose}
+                    >
                         Registrarse
                     </a>
-                    <a href="#" className="text-white text-lg font-medium p-2 rounded hover:bg-indigo-600">
+                    <a 
+                        href="#" 
+                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                        onClick={onClose}
+                    >
                         Acerca de
                     </a>
                 </nav>
             </div>
-
-            {/* Overlay oscuro (para cuando el menú está abierto) */}
-            {isOpen && (
-                <div 
-                    className="fixed inset-0 bg-black opacity-50 z-40"
-                    onClick={onClose} // Cierra el menú al hacer clic fuera
-                />
-            )}
         </>
     );
-}
+};
