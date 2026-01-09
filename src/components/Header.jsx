@@ -10,9 +10,9 @@ const MenuIcon = () => (
 
 export default function Header({ onMenuToggle }) {
     return (
-        <header className="bg-white shadow-md w-full p-4 fixed top-0 z-30">
-            <div className="max-w-6xl mx-auto flex justify-between items-center">
-                {/* Título de la App */}
+        <header className="bg-white/90 backdrop-blur-sm shadow-sm w-full p-4 fixed top-0 z-30 transition-all border-b border-stone-100">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+                {/* Logo de CalificáTuProfe */}
                 <a 
                     href="/"
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -25,10 +25,31 @@ export default function Header({ onMenuToggle }) {
                     />
                 </a>
 
-                {/* Icono de Menu para Mobile */}
+                {/* Menú de escritorio */}
+                <nav
+                    className="hidden md:flex items-center gap-8"
+                >
+                    <a href="#"
+                        className="text-stone-600 hover:text-sky-500 font-medium transition-colors"
+                    >
+                        Iniciar Sesión
+                    </a>
+                    <a href="#"
+                        className="text-stone-600 hover:text-sky-500 font-medium transition-colors"
+                    >
+                        Registrarse
+                    </a>
+                    <a href="#"
+                        className="text-stone-600 hover:text-sky-500 font-medium transition-colors"
+                    >
+                        Acerca de
+                    </a>
+                </nav>
+
+                {/* Menú de móviles */}
                 <button
                     onClick={onMenuToggle}
-                    className="p-1 rounded-md text-gray-700 hover:bg-gray-100 transition duration-150"
+                    className="p-2 rounded-md text-stone-600 hover:bg-stone-100 transition duration-150 md:hidden"
                     aria-label="Abrir menú de navegación"
                 >
                     <MenuIcon/>
