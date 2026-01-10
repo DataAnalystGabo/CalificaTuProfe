@@ -1,74 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Search from "../components/Search";
 import Button from "../components/Button";
 import TeacherCard from "../components/TeacherCard";
+import { getTeacherSummary } from "../services/teacherService";
 
-// --- Datos de ejemplo ---
-const PROFESORES_MOCK = [
-    { 
-        id: 1, 
-        nombre: "Laura Gómez", 
-        universidad: "UNAB", 
-        materia: "Análisis II", 
-        rating: 5, 
-        reviews: "12 reseñas",
-        comment: "Excelente profesora, explica todo con mucha paciencia.",
-        date: "Hace muy poco",
-        tags: ["Amable", "Puntual", "Clases claras"]
-    },
-    { 
-        id: 2, 
-        nombre: "Mario Rossi", 
-        universidad: "UBA", 
-        materia: "Anatomía", 
-        rating: 2, 
-        reviews: "45 reseñas",
-        comment: "Muy exigente y las clases son un poco desorganizadas.",
-        date: "Hace 1 semana",
-        tags: ["Exigente", "Desorganizado"]
-    },
-    { 
-        id: 3, 
-        nombre: "Esteban Quito",
-        universidad: "UTN", 
-        materia: "Algoritmos", 
-        rating: 3, 
-        reviews: "8 reseñas",
-        comment: "El contenido es bueno pero el ritmo es demasiado rápido.",
-        date: "Hace 5 días",
-        tags: ["Puntual", "Desorganizado", "Lento explicando"]
-    },
-    { 
-        id: 4, 
-        nombre: "Lucía Fernández",
-        universidad: "UNLP", 
-        materia: "Física I", 
-        rating: 4, 
-        reviews: "19 reseñas",
-        comment: "Muy recomendada para entender los conceptos base.",
-        date: "Hace 12 días",
-        tags: ["Impuntual", "Poco exigente", "Lento"]
-    },
-    { 
-        id: 5, 
-        nombre: "Carlos Méndez", 
-        universidad: "UCA", 
-        materia: "Derecho Civil", 
-        rating: 1, 
-        reviews: "30 reseñas",
-        comment: "Es casi imposible promocionar con él.",
-        date: "Hace 2 días",
-        tags: ["Imparcial", "Carismático", "Amigable"]
-    },
-];
 
-export default function Explorar() {
+export default function DiscoverReviews() {
+
+    // Estados para los datos de la DB y el estado de cara
+    const [professors, setProfessors] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
 
-    const filteredProfessors = PROFESORES_MOCK.filter(p => 
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.materia.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.universidad.toLowerCase().includes(searchTerm.toLowerCase())
+    // Efecto par cargar los datos al montar el componente
+    useEffect(() => {
+        const fetchProfessors = async () => {
+            setLoading(true);
+            const data = await getTeacherSummary();
+            if (data) {
+                setProfessors(data);
+            }
+            setLoading(false);
+        };
+
+        fetchProfessors();
+    }, []);
+
+    // Filtrado sobre los datos recibidos desde Supabase
+    const filteredProfessors = professors.filter(p =>
+        (p.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.subject_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.university?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.latest_comment?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return(
@@ -111,7 +74,7 @@ export default function Explorar() {
                         Explorar reseñas
                     </h2>
                     <p className="text-stone-400 text-sm">
-                        {filteredProfessors.length} resultados encontrados
+                        {loading ? "Cargando...": `${filteredProfessors.length} resultados encontrados`}
                     </p>
                 </div>
 
@@ -119,16 +82,16 @@ export default function Explorar() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
                         {filteredProfessors.map(prof => (
                             <TeacherCard 
-                                rating={prof.rating}
-                                comment={prof.comment}
-                                qcomment={prof.reviews}
-                                teacherName={prof.nombre}
-                                subjectName={prof.materia}
-                                university={prof.universidad}
-                                key={prof.id}
+                                key={prof.teacher_subject_id}
+                                rating={prof.average_rating || 0}
+                                comment={prof.latest_comment}
+                                qcomment={`${prof.total_reviews} reseñas`}
+                                teacherName={prof.full_name}
+                                subjectName={prof.subject_name}
+                                university={prof.university}
                                 width="w-full"
-                                date={prof.date}
-                                tagsPillBadge={prof.tags}
+                                date={"Reciente"}
+                                tagsPillBadge={[]}
                             />
                         ))}
                     </div>
@@ -140,4 +103,4 @@ export default function Explorar() {
             </main>
         </div>
     )
-}
+};
