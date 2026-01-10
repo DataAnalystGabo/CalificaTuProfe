@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Páginas
 import LandingPage from "./pages/LandingPage";
-import Explorar from "./pages/Explorar";
+import DiscoverReviews from "./pages/DiscoverReviews";
 import NotFound from "./pages/NotFound";
 
 // Componentes Globales
@@ -32,7 +32,7 @@ function App() {
                         <Route path="/" element={<LandingPage />} />
 
                         {/* Ruta: Explorar */}
-                        <Route path="/explorar" element={<Explorar />} />
+                        <Route path="/explorar" element={<DiscoverReviews />} />
                         
                         {/* Ruta: Not Found */}
                         <Route path="*" element={<NotFound />}/>

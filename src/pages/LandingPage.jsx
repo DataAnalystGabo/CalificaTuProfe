@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FaHeadSideCough, FaCompassDrafting } from "react-icons/fa6";
+import { FaScaleBalanced, FaHeadSideCough, FaCompassDrafting } from "react-icons/fa6";
 
 // Componentes personalizados
 import Target from '../components/Target';
@@ -122,6 +122,7 @@ export default function LandingPage() {
                     isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Asimetría de Poder</h2>
 
                     <PillBadge
+                        icon={FaScaleBalanced}
                         text="Buscando el equilibrio"
                         bgColor="bg-emerald-100"
                         borderColor="border-emerald-500"
