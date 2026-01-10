@@ -3,7 +3,7 @@ import Search from "../components/Search";
 import Button from "../components/Button";
 import TeacherCard from "../components/TeacherCard";
 import { getTeacherSummary } from "../services/teacherService";
-
+import { formatRelativeDate } from "../utils/formatDate";
 
 export default function DiscoverReviews() {
 
@@ -22,16 +22,14 @@ export default function DiscoverReviews() {
             }
             setLoading(false);
         };
-
         fetchProfessors();
     }, []);
 
-    // Filtrado sobre los datos recibidos desde Supabase
+    // Filtrado sobre los datos recibidos desde Supabase para el buscador
     const filteredProfessors = professors.filter(p =>
         (p.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (p.subject_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (p.university?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (p.latest_comment?.toLowerCase().includes(searchTerm.toLowerCase()))
+        (p.university?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return(
@@ -84,13 +82,14 @@ export default function DiscoverReviews() {
                             <TeacherCard 
                                 key={prof.teacher_subject_id}
                                 rating={prof.average_rating || 0}
-                                comment={prof.latest_comment}
+                                positiveComment={prof.latest_positive}
+                                constructiveComment={prof.latest_constructive}
                                 qcomment={`${prof.total_reviews} reseñas`}
                                 teacherName={prof.full_name}
                                 subjectName={prof.subject_name}
                                 university={prof.university}
                                 width="w-full"
-                                date={"Reciente"}
+                                reviewDate={formatRelativeDate(prof.last_review_date)}
                                 tagsPillBadge={[]}
                             />
                         ))}

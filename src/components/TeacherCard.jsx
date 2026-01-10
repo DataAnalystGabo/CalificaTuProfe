@@ -31,7 +31,8 @@ const StarRating = ({
 
 export default function TeacherCard({ 
     rating,
-    comment,
+    positiveComment,
+    constructiveComment,
     qcomment,
     teacherName, 
     subjectName,
@@ -40,7 +41,7 @@ export default function TeacherCard({
     filledColor,
     shadow = true,
     width = "w-72",
-    date = "Hace tiempo",
+    reviewDate,
     tagsPillBadge = []
 }) {
     return (
@@ -63,7 +64,7 @@ export default function TeacherCard({
                             {teacherName}
                         </p>
                         <p className="text-xs text-stone-400">
-                            {date}
+                            {reviewDate}
                         </p>
                     </div>
                     
@@ -94,13 +95,20 @@ export default function TeacherCard({
 
             {/* Estrellas de puntuación */}
             <div className="flex flex-col md:flex-row p-2 pl-0 justify-start items-start md:items-center gap-4">
-                <StarRating
-                    emptyColor={emptyColor}
-                    filledColor={filledColor}
-                    rating={rating}
-                    maxRating={5}
-                />
+                <div className="w-auto flex flex-row px-3 py-1 border- gap-2 items-center justify-center bg-stone-100 rounded-2xl  border border-stone-400">
+                    <span className="font-bold text-stone-500">
+                        {/* Number y toFixed asegura que los numeros enteros se muestren con el decimal .0. Ejemplo: 4.0 */}
+                        {Number(rating).toFixed(1)}
+                    </span>
 
+                    <StarRating
+                        emptyColor={emptyColor}
+                        filledColor={filledColor}
+                        rating={rating}
+                        maxRating={5}
+                    />
+                </div>
+                
                 <div className="flex flex-wrap gap-2 mt-1 mb-3">
                     {tagsPillBadge.map((tag, index) => (
                         <PillBadge 
@@ -113,10 +121,30 @@ export default function TeacherCard({
                 </div>
             </div>
 
-            {/* Comentario */}
-            <p className="text-stone-500 text-sm italic grow mt-2">
-                "{comment}"
-            </p>
+            {/* Comentarios */}
+            <div className="flex flex-col gap-3 mt-4 grow">
+                
+                {/* Bloque positivo */}
+                <div className="pl-3 border-l-4 border-emerald-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Lo mejor</span>
+                    <p className="text-stone-600 text-sm leading-relaxed">
+                        "{positiveComment || "Sé el primero en comentar."}"
+                    </p>
+                </div>
+
+                {/* Bloque constructivo */}
+                <div className="pl-3 border-l-4 border-amber-400">
+                    <div className="flex items-center gap-1 mb-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                            A mejorar
+                        </span>
+                    </div>
+                    <p className="text-stone-600 text-sm leading-relaxed italic">
+                        "{constructiveComment || "Sé el primero en comentar."}"
+                    </p>
+                </div>
+            </div>
+
         </div>
     )
 }
