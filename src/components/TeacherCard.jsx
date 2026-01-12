@@ -154,7 +154,7 @@ export default function TeacherCard({
                 <div className="relative flex flex-col justify-center h-30 px-3 py-6 gap-1 border-l-4 border-amber-400 bg-amber-50 rounded-r-md overflow-hidden">
                 
                     {/* Contenido: Se blurea si NO está autenticado */}
-                    <div className={`flex flex-col gap-1 transition-all duration-500 ${!isAuthenticated ? 'blur-[4px] select-none': ''}`}>
+                    <div className={`flex flex-col gap-1 transition-all duration-500 ${!isAuthenticated ? 'blur-xs select-none': ''}`}>
                         <div className="flex items-center gap-1">
                             <AiOutlineDislike className="h-3 w-3 text-amber-600"/>
                             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
@@ -171,9 +171,11 @@ export default function TeacherCard({
                     {!isAuthenticated && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                             <MdOutlineLock className="h-5 w-5 text-amber-700 mb-1"/>
-                            <span className="text-sm font-semibold tracking-tighter text-amber-800 px-2 py-0.5">
-                                Regístrate para leer
-                            </span>
+                            <Link 
+                                to="/"
+                                className="text-sm font-medium tracking-tighter text-amber-800 px-2 py-0.5">
+                                Registrate para leer
+                            </Link>
                         </div>
                     )}
                 </div>
@@ -182,7 +184,7 @@ export default function TeacherCard({
             {/* Botón de acción final */}
             <Link
                 to="/leerReseñas"
-                className="bg-sky-500 text-white px-8 py-3 rounded-xl text-center mt-4 hover:bg-sky-400 transition-all shadow-lg hover:shadow-sky-200 inline-block cursor-pointer"
+                className="bg-sky-500 text-white px-8 py-3 rounded-xl text-center mt-4 font-medium hover:bg-sky-400 transition-all shadow-lg hover:shadow-sky-200 inline-block cursor-pointer"
                 onClick={() => console.log('CTA: Leer todas las reseñas')}
             >
                 Leer reseñas

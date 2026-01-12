@@ -11,6 +11,7 @@ import Header from "./components/Header";
 import MobileMenu from "./components/MobileMenu";
 
 function App() {
+
     // Estado único para el menú móvil (controla Header y MobileMenu)
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 

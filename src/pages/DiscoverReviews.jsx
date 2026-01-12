@@ -4,8 +4,11 @@ import Button from "../components/Button";
 import TeacherCard from "../components/TeacherCard";
 import { getTeacherSummary } from "../services/teacherService";
 import { formatRelativeDate } from "../utils/formatDate";
+import { useAuth } from "../context/AuthContext";
 
 export default function DiscoverReviews() {
+    // Obtener el estado de autenticarión real
+    const { isAuthenticated } = useAuth();
 
     // Estados para los datos de la DB y el estado de cara
     const [professors, setProfessors] = useState([]);
@@ -91,6 +94,7 @@ export default function DiscoverReviews() {
                                 width="w-full"
                                 reviewDate={formatRelativeDate(prof.last_review_date)}
                                 tagsPillBadge={[]}
+                                isAuthenticated={isAuthenticated}
                             />
                         ))}
                     </div>
