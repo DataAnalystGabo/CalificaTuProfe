@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import AuthShell from "./components/Auth/AuthShell";
 
 // Páginas
 import LandingPage from "./pages/LandingPage";
@@ -40,6 +41,7 @@ function App() {
                     </Routes>
                 </div>
             </div>
+            <AuthShell />
         </Router>
     );
 }

@@ -6,6 +6,12 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState("login"); // login o register
+
+    const openLogin = () => { setModalMode("login"); setIsModalOpen(true); };
+    const openRegister = () => { setModalMode("register"); setIsModalOpen(true); };
+    const closeModal = () => setIsModalOpen(false);
 
     // -----------------------------------------------
     // Función TEMPORAL para TESTEAR circuito de login
@@ -41,7 +47,17 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            loading, 
+            isAuthenticated: !!user,
+            isModalOpen,
+            modalMode,
+            openLogin,
+            openRegister,
+            closeModal,
+            setModalMode // Para cambiar entre pestañas dentro del modal    
+        }}>
             {!loading && children}
         </AuthContext.Provider>
     );

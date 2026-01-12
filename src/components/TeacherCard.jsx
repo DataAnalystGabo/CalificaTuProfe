@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import PillBadge from "./PillBadge";
 import { RxStar } from "react-icons/rx";
 import { RxStarFilled } from "react-icons/rx";
@@ -48,6 +49,9 @@ export default function TeacherCard({
     tagsPillBadge = [],
     isAuthenticated
 }) {
+    // Obtenemos la función del contexto
+    const { openRegister } = useAuth();
+
     return (
 
         <div className={`
@@ -171,11 +175,11 @@ export default function TeacherCard({
                     {!isAuthenticated && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                             <MdOutlineLock className="h-5 w-5 text-amber-700 mb-1"/>
-                            <Link 
-                                to="/"
-                                className="text-sm font-medium tracking-tighter text-amber-800 px-2 py-0.5">
+                            <button 
+                                onClick={openRegister}
+                                className="text-sm font-medium tracking-tighter text-amber-800 px-2 py-0.5 cursor-pointer">
                                 Registrate para leer
-                            </Link>
+                            </button>
                         </div>
                     )}
                 </div>
