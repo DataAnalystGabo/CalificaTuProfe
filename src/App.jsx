@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import AuthShell from "./components/Auth/AuthShell";
 
-// Páginas
+// --- PAGINAS Y COMPONENTES GLOBALES ---
 import LandingPage from "./pages/LandingPage";
 import DiscoverReviews from "./pages/DiscoverReviews";
 import NotFound from "./pages/NotFound";
-
-// Componentes Globales
 import Header from "./components/Header";
 import MobileMenu from "./components/MobileMenu";
 
@@ -21,28 +20,30 @@ function App() {
     const closeMenu = () => setIsMenuOpen(false);
 
     return (
-        <Router>
-            <div className="min-h-screen bg-stone-50 flex flex-col">
-                {/* Header Global  */}
-                <Header onMenuToggle={openMenu} />
-                <MobileMenu isOpen={isMenuOpen} onClose={closeMenu} />
+        <AuthProvider>
+            <Router>
+                <div className="min-h-screen bg-stone-50 flex flex-col">
+                    {/* Header Global  */}
+                    <Header onMenuToggle={openMenu} />
+                    <MobileMenu isOpen={isMenuOpen} onClose={closeMenu} />
 
-                {/* Contenedor de Rutas */}
-                <div className="grow">
-                    <Routes>
-                        {/* Ruta: Landing Page */}
-                        <Route path="/" element={<LandingPage />} />
+                    {/* Contenedor de Rutas */}
+                    <div className="grow">
+                        <Routes>
+                            {/* Ruta: Landing Page */}
+                            <Route path="/" element={<LandingPage />} />
 
-                        {/* Ruta: Explorar */}
-                        <Route path="/explorar" element={<DiscoverReviews />} />
-                        
-                        {/* Ruta: Not Found */}
-                        <Route path="*" element={<NotFound />}/>
-                    </Routes>
+                            {/* Ruta: Explorar */}
+                            <Route path="/explorar" element={<DiscoverReviews />} />
+                            
+                            {/* Ruta: Not Found */}
+                            <Route path="*" element={<NotFound />}/>
+                        </Routes>
+                    </div>
                 </div>
-            </div>
-            <AuthShell />
-        </Router>
+                <AuthShell />
+            </Router>
+        </AuthProvider>
     );
 }
 

@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { authService } from "../../services/authService";
 import { MdOutlineLock, MdOutlineEmail, MdOutlineClose } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthShell() {
+    // --- CONTEXTO Y NAVEGACIÓN ---
     const { isModalOpen, closeModal, modalMode, setModalMode } = useAuth();
+    const navigate = useNavigate();
 
-    // Estados del formulario
+    // --- ESTADOS DEL FORMULARIO Y CARGA ---
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
@@ -14,6 +17,11 @@ export default function AuthShell() {
 
     if (!isModalOpen) return null;
 
+    // --- LÓGICA DE ENVÍO Y AUTENTICACIÓN ---
+    /**
+     * Procesa el inicio de sesión o registro. 
+     * Si el login es exitoso, redirecciona a la vista de exploración.
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
@@ -22,6 +30,9 @@ export default function AuthShell() {
         try {
             if (modalMode === "login") {
                 await authService.signIn(email, password);
+
+                // Redirección tras login exitoso
+                navigate("/explorar");
             } else {
                 await authService.signUp(email, password);
                 alert("¡Registro exitoso! Revisá tu email y confirmá el registro.");

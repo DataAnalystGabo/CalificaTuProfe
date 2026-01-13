@@ -5,16 +5,22 @@ import logoBlack from "../assets/logo-black.svg";
 
 export default function Header({ onMenuToggle }) {
 
-    // Extraemos las funciones del contexto dentro del componente
+    // --- CONTEXTO DE USUARIO ---
     const { isAuthenticated, user, signOut, openLogin, openRegister } = useAuth();
 
     return (
         <header className="bg-white/90 backdrop-blur-sm shadow-sm w-full p-4 fixed top-0 z-30 transition-all border-b border-stone-100">
             <div className="max-w-7xl mx-auto flex justify-between items-center">
+                
                 {/* Logo de CalificáTuProfe */}
+                {/**
+                * Navegación dinámica del Logo:
+                * Si está autenticado, lleva al dashboard (explorar).
+                * Si es invitado, lleva a la landing page.
+                */}
 
                 <Link
-                    to="/"
+                    to={isAuthenticated ? "/explorar" : "/"}
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                     aria-label="CalificáTuProfe - Inicio"
                 >
