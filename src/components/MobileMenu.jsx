@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { MdOutlineClose } from "react-icons/md";
 import { FaPerson, FaChartColumn } from "react-icons/fa6";
 import { TbLogout2 } from "react-icons/tb";
@@ -8,6 +9,7 @@ export default function MobileMenu({ isOpen, onClose }) {
 
     // Extraemos las funciones del contexto dentro del componente
     const { isAuthenticated, user, signOut, openLogin, openRegister } = useAuth();
+    const navigate = useNavigate();
 
     return (
         <>
@@ -60,7 +62,13 @@ export default function MobileMenu({ isOpen, onClose }) {
                             
                             <div className="w-full pt-4 mt-4 border-t border-stone-200">
                                 <button
-                                    onClick={() => { signOut(); onClose(); }}
+                                    onClick={
+                                        async () => {
+                                            await signOut();
+                                            onClose();
+                                            navigate("/"); // Redirección
+                                        }
+                                    }
                                     className="flex items-center gap-3 w-full px-4 py-3 text-red-500 font-medium rounded-xl hover:bg-red-50 transition-all cursor-pointer"
                                 >
                                     <TbLogout2 className="text-xl" /> Cerrar sesión

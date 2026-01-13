@@ -67,8 +67,13 @@ export const AuthProvider = ({ children }) => {
 
     // --- ACCIONES DE AUTENTICACIÓN ---
     const signOut = async () => {
-        await supabase.auth.signOut();
-        setIsModalOpen(false);
+        try {
+            await supabase.auth.signOut();
+            setUser(null); // Limpieza manual inmediata del estado
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error("Error al cerrar sesión: ", error.message);
+        }
     };
 
     // --- ACCIONES DE INTERFAZ (MODAL) ---
