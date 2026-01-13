@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PillBadge from "./PillBadge";
-import { RxStar } from "react-icons/rx";
-import { RxStarFilled } from "react-icons/rx";
-import { FaBook, FaUniversity, FaComment } from "react-icons/fa";
+
+import { FaBuildingColumns, FaBook, FaCommentDots } from "react-icons/fa6";
+import { RxStar, RxStarFilled } from "react-icons/rx";
 import { AiOutlineLike, AiOutlineDislike } from "react-icons/ai";
 import { MdOutlineLock } from "react-icons/md";
 
@@ -49,8 +50,23 @@ export default function TeacherCard({
     tagsPillBadge = [],
     isAuthenticated
 }) {
+    const navigate = useNavigate();
+
     // Obtenemos la función del contexto
     const { openRegister } = useAuth();
+
+    // Función para manejar el botón de "Leer reseñas" de forma dinámica
+    const handleAction = (e) => {
+        e.preventDefault(); // evitamos cualquier comportamiento por defecto
+        
+        if (isAuthenticated) {
+            // Si el usuario está logueado, lo enviamos a la página de reseñas
+            navigate("/readReviews")
+        } else {
+            // Si no está logueado, abrimos el modal de registro
+            openRegister();
+        }
+    };
 
     return (
 
@@ -77,20 +93,20 @@ export default function TeacherCard({
                     <div className="flex flex-col space-y-1 mt-1 mb-1">
 
                         {/* Categoría: universidad */}
-                        <div className="flex items-center text-xs text-stone-500">
-                            <FaUniversity className="h-2.5 w-2.5 mr-1"/>
+                        <div className="flex items-center text-sm text-stone-500">
+                            <FaBuildingColumns className="h-3 w-3 mr-1"/>
                             <span>{university}</span>
                         </div>
 
                         {/* Categoría: materia */}
-                        <div className="flex items-center text-xs text-stone-500">
-                            <FaBook className="h-2.5 w-2.5 mr-1"/>
+                        <div className="flex items-center text-sm text-stone-500">
+                            <FaBook className="h-3 w-3 mr-1"/>
                             <span>{subjectName}</span>
                         </div>
 
                         {/* Categoría: materia */}
-                        <div className="flex items-center text-xs text-stone-500">
-                            <FaComment className="h-2.5 w-2.5 mr-1"/>
+                        <div className="flex items-center text-sm text-stone-500">
+                            <FaCommentDots className="h-3 w-3 mr-1"/>
                             <span>{qcomment}</span>
                         </div>
 
@@ -186,13 +202,12 @@ export default function TeacherCard({
             </div>
 
             {/* Botón de acción final */}
-            <Link
-                to="/leerReseñas"
+            <button
+                onClick={handleAction}
                 className="bg-sky-500 text-white px-8 py-3 rounded-xl text-center mt-4 font-medium hover:bg-sky-400 transition-all shadow-lg hover:shadow-sky-200 inline-block cursor-pointer"
-                onClick={() => console.log('CTA: Leer todas las reseñas')}
             >
                 Leer reseñas
-            </Link>
+            </button>
         </div>
     )
 }

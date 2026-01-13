@@ -12,8 +12,9 @@ const MenuIcon = () => (
 );
 
 export default function Header({ onMenuToggle }) {
+
     // Extraemos las funciones del contexto dentro del componente
-    const { openLogin } = useAuth();
+    const { openLogin, openRegister } = useAuth();
 
     return (
         <header className="bg-white/90 backdrop-blur-sm shadow-sm w-full p-4 fixed top-0 z-30 transition-all border-b border-stone-100">
@@ -43,7 +44,7 @@ export default function Header({ onMenuToggle }) {
                         Iniciar Sesión
                     </button>
                     <button
-                        onClick={openLogin}
+                        onClick={openRegister}
                         className="text-stone-600 hover:text-sky-500 font-medium transition-colors cursor-pointer"
                     >
                         Registrarse

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { authService } from "../../services/authService";
-import { IoClose, IoMailOutline, IoLockClosedOutline } from "react-icons/io5";
+import { MdOutlineLock, MdOutlineEmail, MdOutlineClose } from "react-icons/md";
 
 export default function AuthShell() {
     const { isModalOpen, closeModal, modalMode, setModalMode } = useAuth();
@@ -50,7 +50,7 @@ export default function AuthShell() {
                     className="absolute top-4 right-4 p-1 rounded-full hover:bg-stone-100 transition-colors"
                     onClick={closeModal}
                 >
-                    <IoClose className="h-6 w-6 text-stone-500 cursor-pointer"/>
+                    <MdOutlineClose className="h-6 w-6 text-stone-500 cursor-pointer"/>
                 </button>
 
                 <div className="p-8">
@@ -73,8 +73,8 @@ export default function AuthShell() {
                         {/* Input de email */}
                         <div className="relative">
                             <label className="text-xs font-bold text-stone-500 uppercase ml-1">Email</label>
-                            <div className="relative mt-1">
-                                <IoMailOutline className="absolute h-5 w-5 left-3 top-1/2 -translate-y-1/2 text-stone-400"/>
+                            <div className="relative mt-1 group">
+                                <MdOutlineEmail className="absolute h-5 w-5 left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-sky-500"/>
                                 <input 
                                     type="email"
                                     required
@@ -89,10 +89,10 @@ export default function AuthShell() {
                         {/* Input de Password */}
                         <div className="relative">
                             <label className="text-xs font-bold text-stone-500 uppercase ml-1">Contraseña</label>
-                            <div className="relative mt-1">
-                                <IoLockClosedOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 h-5 w-5" />
+                            <div className="relative mt-1 group">
+                                <MdOutlineLock className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 h-5 w-5 group-focus-within:text-sky-500" />
                                 <input 
-                                    type="password"
+                                    type="password" 
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
