@@ -59,7 +59,6 @@ export default function LandingPage() {
                         <Link
                             to="/explorar"
                             className="bg-sky-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-sky-400 transition-all shadow-lg hover:shadow-sky-200 inline-block"
-                            onClick={() => console.log('CTA Principal: Registro')}
                         >
                             Ver reseñas
                         </Link>

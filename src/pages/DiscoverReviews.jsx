@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function DiscoverReviews() {
     // Obtener el estado de autenticarión real
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, loading: authLoading } = useAuth();
 
     // Estados para los datos de la DB y el estado de cara
     const [professors, setProfessors] = useState([]);
@@ -18,15 +18,32 @@ export default function DiscoverReviews() {
     // Efecto par cargar los datos al montar el componente
     useEffect(() => {
         const fetchProfessors = async () => {
+            if (authLoading) return;
+            
+            console.log("Iniciando fetchProfessors...");
             setLoading(true);
-            const data = await getTeacherSummary();
-            if (data) {
-                setProfessors(data);
+
+            // Creamos una promesa que se resuelve en 5 segundos para no quedar trabados
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Tiempo de espera agotado")), 5000)
+            );
+
+            try {
+                // Ejecutamos la consulta y el timeout en carrera
+                const data = await Promise.race([getTeacherSummary(), timeout]);
+                console.log("Respuesta obtenida:", data[0]);
+                setProfessors(data || []);
+            } catch (error) {
+                console.error("Error capturado:", error.message);
+                setProfessors([]);
+            } finally {
+                console.log("Finalizando carga.");
+                setLoading(false);
             }
-            setLoading(false);
         };
+
         fetchProfessors();
-    }, []);
+    }, [authLoading]);
 
     // Filtrado sobre los datos recibidos desde Supabase para el buscador
     const filteredProfessors = professors.filter(p =>

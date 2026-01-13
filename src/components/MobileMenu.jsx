@@ -1,17 +1,13 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
-// Icono de cierre
-const CloseIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
+import { MdOutlineClose } from "react-icons/md";
+import { FaPerson, FaChartColumn } from "react-icons/fa6";
+import { TbLogout2 } from "react-icons/tb";
 
 export default function MobileMenu({ isOpen, onClose }) {
 
     // Extraemos las funciones del contexto dentro del componente
-    const { openLogin, openRegister } = useAuth();
+    const { isAuthenticated, user, signOut, openLogin, openRegister } = useAuth();
 
     return (
         <>
@@ -31,36 +27,63 @@ export default function MobileMenu({ isOpen, onClose }) {
             >
                 {/* Cabecera del Sidebar */}
                 <div className="flex items-center justify-between p-4 border-b border-stone-200">
-                    <span className="font-bold text-stone-700 text-lg">Menú</span>
+                    <span className="font-bold text-stone-700 text-lg">
+                        {isAuthenticated ? `¡Hola ${user?.nickname}!` : "Menú"}
+                    </span>
                     <button 
                         onClick={onClose}
                         className="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
                     >
-                        <CloseIcon size={24} />
+                        <MdOutlineClose className="w-6 h-6"/>
                     </button>
                 </div>
 
                 {/* Lista de Enlaces */}
                 <nav className="flex flex-col p-6 space-y-6">
-                    <button
-                        onClick={openLogin}
-                        className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer"
-                    >
-                        Iniciar Sesión
-                    </button>
-                    <button
-                        onClick={openRegister}
-                        className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer"
-                    >
-                        Registarse
-                    </button>
-                    <Link
-                        to="/acerca"
-                        onClick={onClose}
-                        className="block px-4 py-3 text-stone-600 font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
-                    >
-                        Acerca de
-                    </Link>
+                    {isAuthenticated ? (
+                        <>
+                            {/* Opciones de Usuario Logueado */}
+                            <Link
+                                to="/perfil"
+                                onClick={onClose}
+                                className="flex items-center gap-3 px-4 py-3 text-stone-600 rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                            >
+                                <FaPerson className="text-lg" /> Mi perfil
+                            </Link>
+                            <Link
+                                to="/estadisticas"
+                                onClick={onClose}
+                                className="flex items-center gap-3 px-4 py-3 text-stone-600  rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                            >
+                                <FaChartColumn className="text-lg" /> Mis estadísticas
+                            </Link>
+                            
+                            <div className="w-full pt-4 mt-4 border-t border-stone-200">
+                                <button
+                                    onClick={() => { signOut(); onClose(); }}
+                                    className="flex items-center gap-3 w-full px-4 py-3 text-red-500 font-medium rounded-xl hover:bg-red-50 transition-all cursor-pointer"
+                                >
+                                    <TbLogout2 className="text-xl" /> Cerrar sesión
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            {/* Opciones de Invitado */}
+                            <button
+                                onClick={() => { openLogin(); onClose(); }}
+                                className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer"
+                            >
+                                Iniciar Sesión
+                            </button>
+                            <button
+                                onClick={() => { openRegister(); onClose(); }}
+                                className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer"
+                            >
+                                Registrarse
+                            </button>
+                        </>
+                    )}
                 </nav>
             </div>
         </>
