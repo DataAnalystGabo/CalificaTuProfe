@@ -31,7 +31,7 @@ export default function DiscoverReviews() {
             try {
                 // Ejecutamos la consulta y el timeout en carrera
                 const data = await Promise.race([getTeacherSummary(), timeout]);
-                console.log("Respuesta obtenida:", data[0]);
+                console.log("Datos de profesores recuperados.");
                 setProfessors(data || []);
             } catch (error) {
                 console.error("Error capturado:", error.message);
