@@ -91,7 +91,11 @@ export default function DiscoverReviews() {
                     </p>
                 </div>
 
-                {filteredProfessors.length > 0 ? (
+                {loading ? (
+                    <div className="w-full h-64 flex items-center justify-center">
+                        <div className="text-stone-400 font-medium animate-pulse text-lg">Cargando profesores...</div>
+                    </div>
+                ) : filteredProfessors.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
                         {filteredProfessors.map(prof => (
                             <TeacherCard

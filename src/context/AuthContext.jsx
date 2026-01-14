@@ -130,14 +130,7 @@ export const AuthProvider = ({ children }) => {
             setModalMode, // Para cambiar entre pestañas dentro del modal
             signOut
         }}>
-            {/* Si está cargando mostramos un spinner simple, sino la app */}
-            {loading ? (
-                <div className="h-screen w-full flex items-center justify-center bg-stone-50">
-                    <div className="text-stone-400 font-medium animate-pulse">Cargando sesión...</div>
-                </div>
-            ) : (
-                children
-            )}
+            {children}
         </AuthContext.Provider>
     );
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { FaScaleBalanced, FaHeadSideCough, FaCompassDrafting } from "react-icons/fa6";
 
 // Componentes personalizados
@@ -10,7 +11,17 @@ import ReviewsCarousel from '../components/ReviewsCarousel';
 // Assets
 import logoWhite from '../assets/logo-white.svg';
 
+
 export default function LandingPage() {
+    const { isAuthenticated, loading, openRegister } = useAuth();
+    const navigate = useNavigate();
+
+    // Redireccionar si el usuario ya está autenticado
+    useEffect(() => {
+        if (!loading && isAuthenticated) {
+            navigate("/explorar");
+        }
+    }, [loading, isAuthenticated, navigate]);
 
     // Hook personalizado para detectar visibilidad (animaciones)
     function useIsVisible() {
@@ -40,6 +51,9 @@ export default function LandingPage() {
 
     const { ref: titleRef, isVisible } = useIsVisible()
 
+    // Prevenir FOUC: Si está cargando o está autenticado (y redirigiendo), no renderizar nada
+    if (loading || isAuthenticated) return null;
+
     return (
         <div className="flex flex-col pt-16">
 
@@ -56,12 +70,12 @@ export default function LandingPage() {
                         <p className="text-lg mb-8 max-w-sm text-stone-500 animate-delay-500 animate-slide-left">
                             La plataforma anónima donde los estudiantes evalúan a sus profesores, tal como ellos a nosotros.
                         </p>
-                        <Link
-                            to="/explorar"
-                            className="bg-sky-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-sky-400 transition-all shadow-lg hover:shadow-sky-200 inline-block"
+                        <button
+                            onClick={openRegister}
+                            className="bg-sky-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-sky-400 transition-all shadow-lg hover:shadow-sky-200 inline-block cursor-pointer"
                         >
                             Ver reseñas
-                        </Link>
+                        </button>
                     </div>
 
                     {/* Tarjeta dispersa 1 */}
@@ -113,12 +127,11 @@ export default function LandingPage() {
                     </div>
                 </div>
             </main>
-            
+
             <section className="w-full max-w-7xl mx-auto py-16 bg-white">
                 <div className="max-w-lg mx-auto p-4 text-left flex flex-col items-start">
 
-                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
-                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Asimetría de Poder</h2>
+                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Asimetría de Poder</h2>
 
                     <PillBadge
                         icon={FaScaleBalanced}
@@ -135,8 +148,7 @@ export default function LandingPage() {
 
                 <div className="max-w-lg mx-auto p-4 text-left flex flex-col items-start">
 
-                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
-                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Anonimidad Total</h2>
+                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Anonimidad Total</h2>
 
                     <PillBadge
                         icon={FaHeadSideCough}
@@ -147,14 +159,13 @@ export default function LandingPage() {
                     />
 
                     <p className="text-lg mt-4 mb-8 text-left text-stone-500">
-                        <strong>Nuestra misión es simple: construir un ecosistema académico basado en la transparencia.</strong> Hemos creado un espacio donde tu experiencia tiene un peso real, sin riesgo personal alguno. Garantizamos el anonimato total de cada reseña para que la sinceridad sea tu única preocupación. Al empoderar a miles de alumnos anónimos, la calidad pedagógica se convierte en el nuevo estándar. Es la libertad de expresión, finalmente, aplicada a tu educación. 
+                        <strong>Nuestra misión es simple: construir un ecosistema académico basado en la transparencia.</strong> Hemos creado un espacio donde tu experiencia tiene un peso real, sin riesgo personal alguno. Garantizamos el anonimato total de cada reseña para que la sinceridad sea tu única preocupación. Al empoderar a miles de alumnos anónimos, la calidad pedagógica se convierte en el nuevo estándar. Es la libertad de expresión, finalmente, aplicada a tu educación.
                     </p>
                 </div>
 
                 <div className="max-w-lg mx-auto p-4 text-left flex flex-col items-start">
 
-                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${
-                    isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Decisiones Justas</h2>
+                    <h2 ref={titleRef} className={`text-4xl font-extrabold mb-4 text-stone-700 ${isVisible ? 'animate-typewriter' : 'opacity-0'}`}>Decisiones Justas</h2>
 
                     <PillBadge
                         icon={FaCompassDrafting}
@@ -175,12 +186,12 @@ export default function LandingPage() {
                     <h3 className="text-3xl font-bold text-stone-700">Lo que dicen los estudiantes</h3>
                 </div>
 
-                <ReviewsCarousel/>
+                <ReviewsCarousel />
             </section>
 
             <footer className="bg-stone-900 text-stone-400 py-12 border-t border-stone-800">
                 <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-                    
+
                     {/* Columna 1: Marca y Misión */}
                     <div className="col-span-1 md:col-span-2">
                         <Link
@@ -188,14 +199,14 @@ export default function LandingPage() {
                             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                             aria-label="CalificáTuProfe - Inicio"
                         >
-                            <img 
-                                src={logoWhite} 
+                            <img
+                                src={logoWhite}
                                 alt="Logo de CalificáTuProfe"
-                                className="h-10 w-auto" 
+                                className="h-10 w-auto"
                             />
                         </Link>
                         <p className="mb-6 mt-6 max-w-sm leading-relaxed">
-                            Democratizando la educación universitaria a través de la transparencia. 
+                            Democratizando la educación universitaria a través de la transparencia.
                             Una plataforma hecha por estudiantes, para estudiantes.
                         </p>
                         {/* Redes Sociales (Ejemplos visuales) */}
@@ -214,19 +225,19 @@ export default function LandingPage() {
                         <h5 className="text-stone-100 font-bold mb-4 uppercase tracking-wider text-xs">Plataforma</h5>
                         <ul className="space-y-3">
                             <li>
-                                <Link to="/explorar" className="hover:text-sky-400 transition-colors duration-200">
+                                <button onClick={openRegister} className="hover:text-sky-400 transition-colors duration-200 text-left cursor-pointer">
                                     Buscar Profesores
-                                </Link>
+                                </button>
                             </li>
                             <li>
-                                <Link to="/escribir" className="hover:text-sky-400 transition-colors duration-200">
+                                <button onClick={openRegister} className="hover:text-sky-400 transition-colors duration-200 text-left cursor-pointer">
                                     Escribir una Reseña
-                                </Link>
+                                </button>
                             </li>
                             <li>
-                                <Link to="ranking" className="hover:text-sky-400 transition-colors duration-200">
+                                <button onClick={openRegister} className="hover:text-sky-400 transition-colors duration-200 text-left cursor-pointer">
                                     Ranking de Universidades
-                                </Link>
+                                </button>
                             </li>
                         </ul>
                     </div>
