@@ -20,24 +20,24 @@ export default function DiscoverReviews() {
         const fetchProfessors = async () => {
             if (authLoading) return;
             
-            console.log("Iniciando fetchProfessors...");
+            console.log("Iniciando consulta a la tabla 'teacher_summary'...");
             setLoading(true);
 
             // Creamos una promesa que se resuelve en 5 segundos para no quedar trabados
             const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("Tiempo de espera agotado")), 5000)
+                setTimeout(() => reject(new Error("¡Tiempo de espera agotado!")), 5000)
             );
 
             try {
                 // Ejecutamos la consulta y el timeout en carrera
                 const data = await Promise.race([getTeacherSummary(), timeout]);
-                console.log("Datos de profesores recuperados.");
+                console.log("¡Datos de profesores recuperados!");
                 setProfessors(data || []);
             } catch (error) {
                 console.error("Error capturado:", error.message);
                 setProfessors([]);
             } finally {
-                console.log("Finalizando carga.");
+                console.log("Consulta finalizada.");
                 setLoading(false);
             }
         };
