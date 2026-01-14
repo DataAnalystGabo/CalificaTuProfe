@@ -19,18 +19,13 @@ export default function DiscoverReviews() {
     useEffect(() => {
         const fetchProfessors = async () => {
             if (authLoading) return;
-            
+
             console.log("Iniciando consulta a la tabla 'teacher_summary'...");
             setLoading(true);
 
-            // Creamos una promesa que se resuelve en 5 segundos para no quedar trabados
-            const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("¡Tiempo de espera agotado!")), 5000)
-            );
-
             try {
-                // Ejecutamos la consulta y el timeout en carrera
-                const data = await Promise.race([getTeacherSummary(), timeout]);
+                // Ejecutamos la consulta directamente
+                const data = await getTeacherSummary();
                 console.log("¡Datos de profesores recuperados!");
                 setProfessors(data || []);
             } catch (error) {
@@ -52,13 +47,13 @@ export default function DiscoverReviews() {
         (p.university?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    return(
+    return (
         <div className="w-full min-h-screen bg-stone-50 pt-16">
 
             {/* Barra de Control */}
             <div className="sticky top-17 z-20 py-8 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm transition-all">
                 <div className="max-w-2xl mx-auto flex flex-col gap-6 px-4">
-                    <Search 
+                    <Search
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -92,14 +87,14 @@ export default function DiscoverReviews() {
                         Explorar reseñas
                     </h2>
                     <p className="text-stone-400 text-sm">
-                        {loading ? "Cargando...": `${filteredProfessors.length} resultados encontrados`}
+                        {loading ? "Cargando..." : `${filteredProfessors.length} resultados encontrados`}
                     </p>
                 </div>
 
                 {filteredProfessors.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
                         {filteredProfessors.map(prof => (
-                            <TeacherCard 
+                            <TeacherCard
                                 key={prof.teacher_subject_id}
                                 rating={prof.average_rating || 0}
                                 positiveComment={prof.latest_positive}

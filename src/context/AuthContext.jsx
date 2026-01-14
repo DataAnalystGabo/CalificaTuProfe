@@ -6,7 +6,7 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
     // --- ESTADOS DE USUARIO Y SESIÓN ---
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // --- ESTADOS DE CONTROL DE MODAL (UI) ---
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,15 +24,12 @@ export const AuthProvider = ({ children }) => {
                 .select("nickname, role, status")
                 .eq("id", userId)
                 .single()
-            
+
             if (error) throw error;
             return data;
         } catch (error) {
             console.error("Error cargando perfil:", error.message);
-        } finally {
-            // Esto garantiza que la app deje de mostrar el label "Cargando"
-            // incluso si hay un error
-            setLoading(false);
+            return null;
         }
     };
 
@@ -42,27 +39,53 @@ export const AuthProvider = ({ children }) => {
      * combina los datos de Auth con los del perfil público.
      */
     useEffect(() => {
-        // Obtenemos sesión inicial
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (session) {
-                const profile = await fetchUserProfile(session.user.id);
-                setUser({ ...session.user, ...profile });
-            }
-            setLoading(false);
-        });
+        let mounted = true;
 
-        // Escuchamos cambios en la auth (Login/Logout)
+        const initializeAuth = async () => {
+
+            try {
+                // 2. Ejecutamos getSession directamente (sin race condition manual)
+                const { data, error } = await supabase.auth.getSession();
+
+                if (error || !data.session) {
+                    if (mounted) setUser(null);
+                    // Si hubo error real de Supabase, limpiamos
+                    if (error) await supabase.auth.signOut();
+                } else {
+                    // Si tenemos sesión, buscamos el perfil (también protegido)
+                    const profile = await fetchUserProfile(data.session.user.id);
+                    if (mounted) {
+                        setUser(profile ? { ...data.session.user, ...profile } : data.session.user);
+                    }
+                }
+            } catch (err) {
+                console.warn("Inicialización forzada por timeout o error:", err);
+                if (mounted) setUser(null); // Fallback a modo invitado
+            } finally {
+                // 4. EL PUNTO CRÍTICO: Si el componente sigue montado, apagamos loading SIEMPRE
+                if (mounted) setLoading(false);
+            }
+        };
+
+        initializeAuth();
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session) {
+            if (!mounted) return;
+
+            if (event === 'SIGNED_OUT' || (!session && event === 'USER_UPDATED')) {
+                setUser(null);
+                setLoading(false);
+            } else if (session) {
                 const profile = await fetchUserProfile(session.user.id);
                 setUser({ ...session.user, ...profile });
-            } else {
-                setUser(null);
+                setLoading(false);
             }
-            setLoading(false);
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     // --- ACCIONES DE AUTENTICACIÓN ---
@@ -83,9 +106,9 @@ export const AuthProvider = ({ children }) => {
 
     // --- RENDERIZADO DEL PROVEEDOR ---
     return (
-        <AuthContext.Provider value={{ 
-            user, 
-            loading, 
+        <AuthContext.Provider value={{
+            user,
+            loading,
             isAuthenticated: !!user,
             isModalOpen,
             modalMode,
@@ -93,9 +116,16 @@ export const AuthProvider = ({ children }) => {
             openRegister,
             closeModal,
             setModalMode, // Para cambiar entre pestañas dentro del modal
-            signOut 
+            signOut
         }}>
-            {!loading && children}
+            {/* Si está cargando mostramos un spinner simple, sino la app */}
+            {loading ? (
+                <div className="h-screen w-full flex items-center justify-center bg-stone-50">
+                    <div className="text-stone-400 font-medium animate-pulse">Cargando sesión...</div>
+                </div>
+            ) : (
+                children
+            )}
         </AuthContext.Provider>
     );
 
