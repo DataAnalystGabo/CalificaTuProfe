@@ -44,13 +44,25 @@ export const AuthProvider = ({ children }) => {
         const initializeAuth = async () => {
 
             try {
-                // 2. Ejecutamos getSession directamente (sin race condition manual)
-                const { data, error } = await supabase.auth.getSession();
+                // Creamos un timeout de seguridad de 10 segundos
+                // Si Supabase se cuelga refrescando el token, esto forzará la carga de la UI
+                const timeoutPromise = new Promise((resolve) =>
+                    setTimeout(() => {
+                        console.warn("Auth check timed out - forcing guest mode");
+                        resolve({ data: { session: null }, error: "Timeout" });
+                    }, 10000)
+                );
+
+                // 2. Ejecutamos getSession compitiendo con el timeout
+                const { data, error } = await Promise.race([
+                    supabase.auth.getSession(),
+                    timeoutPromise
+                ]);
 
                 if (error || !data.session) {
                     if (mounted) setUser(null);
-                    // Si hubo error real de Supabase, limpiamos
-                    if (error) await supabase.auth.signOut();
+                    // Si hubo error real de Supabase (y no es nuestro timeout), limpiamos
+                    if (error && error !== "Timeout") await supabase.auth.signOut();
                 } else {
                     // Si tenemos sesión, buscamos el perfil (también protegido)
                     const profile = await fetchUserProfile(data.session.user.id);
