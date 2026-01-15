@@ -17,27 +17,41 @@ export default function DiscoverReviews() {
 
     // Efecto par cargar los datos al montar el componente
     useEffect(() => {
-        const fetchProfessors = async () => {
-            if (authLoading) return;
+        let mounted = true;
+        let timeoutId;
 
-            console.log("Iniciando consulta a la tabla 'teacher_summary'...");
-            setLoading(true);
+        const fetchProfessors = async () => {
+
+            if (mounted) setLoading(true);
 
             try {
                 // Ejecutamos la consulta directamente
                 const data = await getTeacherSummary();
-                console.log("¡Datos de profesores recuperados!");
-                setProfessors(data || []);
+                if (mounted) setProfessors(data || []);
             } catch (error) {
                 console.error("Error capturado:", error.message);
-                setProfessors([]);
+                if (mounted) setProfessors([]);
             } finally {
-                console.log("Consulta finalizada.");
-                setLoading(false);
+                if (mounted) setLoading(false);
             }
         };
 
-        fetchProfessors();
+        // Si authLoading ya terminó, carga inmediatamente
+        if (!authLoading) {
+            fetchProfessors();
+        } else {
+            // Si no, espera máximo 4 segundos y carga igual
+            console.log('[DiscoverReviews] Esperando auth...');
+            timeoutId = setTimeout(() => {
+                console.warn('[DiscoverReviews] Auth timeout - cargando datos');
+                fetchProfessors();
+            }, 4000);
+        }
+
+        return () => {
+            mounted = false;
+            if (timeoutId) clearTimeout(timeoutId);
+        };
     }, [authLoading]);
 
     // Filtrado sobre los datos recibidos desde Supabase para el buscador
@@ -86,9 +100,6 @@ export default function DiscoverReviews() {
                     <h2 className="text-2xl font-black text-stone-700 uppercase tracking-tight">
                         Explorar reseñas
                     </h2>
-                    <p className="text-stone-400 text-sm">
-                        {loading ? "Cargando..." : `${filteredProfessors.length} resultados encontrados`}
-                    </p>
                 </div>
 
                 {loading ? (

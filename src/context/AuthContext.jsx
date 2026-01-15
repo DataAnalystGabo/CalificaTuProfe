@@ -1,102 +1,131 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
 
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
-    // --- ESTADOS DE USUARIO Y SESIÓN ---
-    const [user, setUser] = useState(null);
+    // --- ESTADOS DE USUARIO Y SESIÓN CON HIDRATACIÓN ---
+    const [user, setUser] = useState(() => {
+        // Intentar recuperar usuario del localStorage al iniciar
+        try {
+            const savedUser = localStorage.getItem('app_user');
+            return savedUser ? JSON.parse(savedUser) : null;
+        } catch (error) {
+            console.error('[AuthContext] Error leyendo localStorage:', error);
+            return null;
+        }
+    });
+
     const [loading, setLoading] = useState(true);
+    const sessionRestoredRef = useRef(false);
 
     // --- ESTADOS DE CONTROL DE MODAL (UI) ---
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState("login"); // login o register
+    const [modalMode, setModalMode] = useState("login");
+
+    // --- FUNCIÓN HELPER PARA ACTUALIZAR USUARIO CON PERSISTENCIA ---
+    const updateUser = (newUser) => {
+        setUser(newUser);
+        if (newUser) {
+            try {
+                localStorage.setItem('app_user', JSON.stringify(newUser));
+            } catch (error) {
+                console.error('[AuthContext] Error guardando en localStorage:', error);
+            }
+        } else {
+            localStorage.removeItem('app_user');
+        }
+    };
 
     // --- LÓGICA DE RECUPERACIÓN DE DATOS ---
-    /**
-     * Consulta la tabla pública 'Users' para obtener el nickname generado
-     * por el Trigger de base de datos tras el registro.
-     */
     const fetchUserProfile = async (userId) => {
         try {
-            const { data, error } = await supabase
+            console.log('[fetchUserProfile] Buscando perfil para:', userId);
+
+            // Timeout de 5 segundos para la query
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout fetchUserProfile')), 5000)
+            );
+
+            const queryPromise = supabase
                 .from("Users")
                 .select("nickname, role, status")
                 .eq("id", userId)
-                .single()
+                .single();
+
+            const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
+            console.log('[fetchUserProfile] Respuesta:', { data, error });
 
             if (error) throw error;
+
+            console.log('[fetchUserProfile] Perfil encontrado:', data);
             return data;
         } catch (error) {
-            console.error("Error cargando perfil:", error.message);
+            console.error('[fetchUserProfile] Error:', error.message);
             return null;
         }
     };
 
     // --- EFECTO DE AUTENTICACIÓN (LIFECYCLE) ---
-    /**
-     * Gestiona la sesión de forma global. Al cargar o cambiar el estado,
-     * combina los datos de Auth con los del perfil público.
-     */
     useEffect(() => {
         let mounted = true;
 
-        const initializeAuth = async () => {
+        // Detectar si hay token guardado
+        const hasToken = Object.keys(localStorage).some(k => k.includes('auth-token'));
 
-            try {
-                // Creamos un timeout de seguridad de 10 segundos
-                // Si Supabase se cuelga refrescando el token, esto forzará la carga de la UI
-                const timeoutPromise = new Promise((resolve) =>
-                    setTimeout(() => {
-                        console.warn("Auth check timed out - forcing guest mode");
-                        resolve({ data: { session: null }, error: "Timeout" });
-                    }, 10000)
-                );
+        if (!hasToken) {
+            setLoading(false);
+            return;
+        }
 
-                // 2. Ejecutamos getSession compitiendo con el timeout
-                const { data, error } = await Promise.race([
-                    supabase.auth.getSession(),
-                    timeoutPromise
-                ]);
+        // Si hay token, esperar al evento de Supabase
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                if (!mounted) return;
+                console.log("[AuthContext] Auth event:", event);
 
-                if (error || !data.session) {
-                    if (mounted) setUser(null);
-                    // Si hubo error real de Supabase (y no es nuestro timeout), limpiamos
-                    if (error && error !== "Timeout") await supabase.auth.signOut();
-                } else {
-                    // Si tenemos sesión, buscamos el perfil (también protegido)
-                    const profile = await fetchUserProfile(data.session.user.id);
-                    if (mounted) {
-                        setUser(profile ? { ...data.session.user, ...profile } : data.session.user);
+                sessionRestoredRef.current = true;
+
+                if (session) {
+                    // Intentar cargar perfil completo
+                    const profile = await fetchUserProfile(session.user.id);
+
+                    if (profile) {
+                        // Caso ideal: perfil cargado
+                        console.log('[AuthContext] Usuario con perfil:', profile);
+                        updateUser({ ...session.user, ...profile });
+                    } else {
+                        // Fallback: usar solo datos de session
+                        console.warn('[AuthContext] Perfil no encontrado - usando session');
+                        updateUser({
+                            id: session.user.id,
+                            email: session.user.email,
+                            nickname: null,
+                            role: 'user',
+                            status: 'active'
+                        });
                     }
+                } else {
+                    updateUser(null);
                 }
-            } catch (err) {
-                console.warn("Inicialización forzada por timeout o error:", err);
-                if (mounted) setUser(null); // Fallback a modo invitado
-            } finally {
-                // 4. EL PUNTO CRÍTICO: Si el componente sigue montado, apagamos loading SIEMPRE
-                if (mounted) setLoading(false);
-            }
-        };
 
-        initializeAuth();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (!mounted) return;
-
-            if (event === 'SIGNED_OUT' || (!session && event === 'USER_UPDATED')) {
-                setUser(null);
-                setLoading(false);
-            } else if (session) {
-                const profile = await fetchUserProfile(session.user.id);
-                setUser({ ...session.user, ...profile });
                 setLoading(false);
             }
-        });
+        );
+
+        // Timeout de seguridad (3s)
+        const timeoutId = setTimeout(() => {
+            if (mounted && !sessionRestoredRef.current) {
+                console.warn("[AuthContext] Timeout - forcing guest mode");
+                setLoading(false);
+            }
+        }, 3000);
 
         return () => {
             mounted = false;
             subscription.unsubscribe();
+            clearTimeout(timeoutId);
         };
     }, []);
 
@@ -104,7 +133,7 @@ export const AuthProvider = ({ children }) => {
     const signOut = async () => {
         try {
             await supabase.auth.signOut();
-            setUser(null); // Limpieza manual inmediata del estado
+            updateUser(null);
             setIsModalOpen(false);
         } catch (error) {
             console.error("Error al cerrar sesión: ", error.message);
@@ -115,6 +144,9 @@ export const AuthProvider = ({ children }) => {
     const openLogin = () => { setModalMode("login"); setIsModalOpen(true); };
     const openRegister = () => { setModalMode("register"); setIsModalOpen(true); };
     const closeModal = () => setIsModalOpen(false);
+
+    // Log de estado para debugging
+    console.log('[AuthContext] Rendering - user:', user, 'loading:', loading);
 
     // --- RENDERIZADO DEL PROVEEDOR ---
     return (
@@ -127,14 +159,12 @@ export const AuthProvider = ({ children }) => {
             openLogin,
             openRegister,
             closeModal,
-            setModalMode, // Para cambiar entre pestañas dentro del modal
+            setModalMode,
             signOut
         }}>
             {children}
         </AuthContext.Provider>
     );
-
 };
 
-// Hook personalizado para usar el contexto fácilmente
 export const useAuth = () => useContext(AuthContext);
