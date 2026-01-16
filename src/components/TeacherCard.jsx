@@ -64,10 +64,10 @@ function TeacherCardSkeleton({ width = "w-72", shadow = true }) {
                 </div>
 
                 {/* Constructive comment skeleton */}
-                <div className="flex flex-col h-30 px-3 py-6 gap-2 border-l-4 border-emerald-300 bg-emerald-50 bg-emerald-50 rounded-r-md">
-                    <div className="h-3 bg-emerald-200 rounded w-20"></div>
-                    <div className="h-3 bg-emerald-200 rounded w-full"></div>
-                    <div className="h-3 bg-emerald-200 rounded w-4/6"></div>
+                <div className="flex flex-col h-30 px-3 py-6 gap-2 border-l-4 border-amber-300 bg-amber-50 bg-amber-50 rounded-r-md">
+                    <div className="h-3 bg-amber-200 rounded w-20"></div>
+                    <div className="h-3 bg-amber-200 rounded w-full"></div>
+                    <div className="h-3 bg-amber-200 rounded w-4/6"></div>
                 </div>
             </div>
 

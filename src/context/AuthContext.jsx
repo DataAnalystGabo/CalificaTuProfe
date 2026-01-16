@@ -78,18 +78,11 @@ export const AuthProvider = ({ children }) => {
     };
 
     // --- EFECTO DE AUTENTICACIÓN (LIFECYCLE) ---
+    // --- EFECTO DE AUTENTICACIÓN (LIFECYCLE) ---
     useEffect(() => {
         let mounted = true;
 
-        // Detectar si hay token guardado
-        const hasToken = Object.keys(localStorage).some(k => k.includes("auth-token"));
-
-        if (!hasToken) {
-            setLoading(false);
-            return;
-        }
-
-        // Si hay token, esperar al evento de Supabase
+        // SIEMPRE suscribirse - Supabase maneja la detección de sesión automáticamente
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 if (!mounted) return;
@@ -124,13 +117,13 @@ export const AuthProvider = ({ children }) => {
             }
         );
 
-        // Timeout de seguridad (3s)
+        // Timeout de seguridad (5s) - Da tiempo a que Supabase restaure la sesión
         const timeoutId = setTimeout(() => {
             if (mounted && !sessionRestoredRef.current) {
                 console.warn("[AuthContext] Timeout - forzando el modo invitado");
                 setLoading(false);
             }
-        }, 3000);
+        }, 5000);
 
         return () => {
             mounted = false;
