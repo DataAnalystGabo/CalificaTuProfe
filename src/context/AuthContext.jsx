@@ -16,7 +16,19 @@ export const AuthProvider = ({ children }) => {
         }
     });
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(() => {
+        // Si hay un user hidratado, no mostrar loading
+        try {
+            const savedUser = localStorage.getItem("app_user");
+            if (savedUser) {
+                const parsed = JSON.parse(savedUser);
+                return !parsed.nickname;
+            }
+        } catch (error) {
+            console.error("[AuthContext] Error leyendo localStorage:", error);
+            return true; // Por defecto, loading=true
+        }
+    });
     const sessionRestoredRef = useRef(false);
 
     // --- ESTADOS DE CONTROL DE MODAL (UI) ---
@@ -78,7 +90,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     // --- EFECTO DE AUTENTICACIÓN (LIFECYCLE) ---
-    // --- EFECTO DE AUTENTICACIÓN (LIFECYCLE) ---
     useEffect(() => {
         let mounted = true;
 
@@ -99,15 +110,27 @@ export const AuthProvider = ({ children }) => {
                         console.log("[AuthContext] Usuario con perfil:", profile);
                         updateUser({ ...session.user, ...profile });
                     } else {
-                        // Fallback: usar solo datos de session
-                        console.warn("[AuthContext] Perfil no encontrado - usando session");
-                        updateUser({
-                            id: session.user.id,
-                            email: session.user.email,
-                            nickname: null,
-                            role: "user",
-                            status: "active"
-                        });
+                        // Fallback: preservar datos del cache si existen
+                        const cachedUser = localStorage.getItem("app_user");
+
+                        if (cachedUser) {
+                            const parsed = JSON.parse(cachedUser);
+                            console.warn("[AuthContext] Usando user del cache - perfil no disponible");
+                            // NO llamar updateUser - mantener el estado hidratado
+
+                            setLoading(false);
+                            return;
+                        } else {
+                            // Solo si NO hay cache, crear user mínimo
+                            console.warn("[AuthContext] Sin cache - creando user básico");
+                            updateUser({
+                                id: session.user.id,
+                                email: session.user.email,
+                                nickname: null,
+                                role: "user",
+                                status: "active"
+                            });
+                        }
                     }
                 } else {
                     updateUser(null);
