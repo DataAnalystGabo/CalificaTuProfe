@@ -8,10 +8,10 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         // Intentar recuperar usuario del localStorage al iniciar
         try {
-            const savedUser = localStorage.getItem('app_user');
+            const savedUser = localStorage.getItem("app_user");
             return savedUser ? JSON.parse(savedUser) : null;
         } catch (error) {
-            console.error('[AuthContext] Error leyendo localStorage:', error);
+            console.error("[AuthContext] Error leyendo localStorage:", error);
             return null;
         }
     });
@@ -28,23 +28,26 @@ export const AuthProvider = ({ children }) => {
         setUser(newUser);
         if (newUser) {
             try {
-                localStorage.setItem('app_user', JSON.stringify(newUser));
+                localStorage.setItem("app_user", JSON.stringify(newUser));
             } catch (error) {
-                console.error('[AuthContext] Error guardando en localStorage:', error);
+                console.error("[AuthContext] Error guardando en localStorage:", error);
             }
         } else {
-            localStorage.removeItem('app_user');
+            localStorage.removeItem("app_user");
         }
     };
 
     // --- LÓGICA DE RECUPERACIÓN DE DATOS ---
-    const fetchUserProfile = async (userId) => {
+    const fetchUserProfile = async (userId, attempt = 1) => {
+        const MAX_ATTEMPTS = 3;
+        const timeout = 3000 + (attempt * 2000); // 3s + 2s por intento
+
         try {
-            console.log('[fetchUserProfile] Buscando perfil para:', userId);
+            console.log(`[fetchUserProfile] Intento ${attempt}/${MAX_ATTEMPTS} - Timeout: ${timeout}ms`);
 
             // Timeout de 5 segundos para la query
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout fetchUserProfile')), 5000)
+                setTimeout(() => reject(new Error('Timeout fetchUserProfile')), timeout)
             );
 
             const queryPromise = supabase
@@ -55,14 +58,21 @@ export const AuthProvider = ({ children }) => {
 
             const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
-            console.log('[fetchUserProfile] Respuesta:', { data, error });
-
             if (error) throw error;
 
-            console.log('[fetchUserProfile] Perfil encontrado:', data);
+            console.log(`[fetchUserProfile] ✅ Éxito en intento ${attempt}:`, data);
             return data;
         } catch (error) {
-            console.error('[fetchUserProfile] Error:', error.message);
+            console.warn(`[fetchUserProfile] ❌ Intento ${attempt} falló:`, error.message);
+
+            if (attempt < MAX_ATTEMPTS) {
+                // Esperar antes de reintentar (1s, 2s)
+                const backoffTime = 1000 * attempt;
+                console.log(`[fechtUserProfile] Esperando ${backoffTime}ms antes de reintentar...`);
+                await new Promise(resolve => setTimeout(resolve, backoffTime));
+                return fetchUserProfile(userId, attempt + 1);
+            }
+            console.error("[fetchUserProfile] Todos los intentos fallaron");
             return null;
         }
     };
@@ -72,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         let mounted = true;
 
         // Detectar si hay token guardado
-        const hasToken = Object.keys(localStorage).some(k => k.includes('auth-token'));
+        const hasToken = Object.keys(localStorage).some(k => k.includes("auth-token"));
 
         if (!hasToken) {
             setLoading(false);
@@ -93,17 +103,17 @@ export const AuthProvider = ({ children }) => {
 
                     if (profile) {
                         // Caso ideal: perfil cargado
-                        console.log('[AuthContext] Usuario con perfil:', profile);
+                        console.log("[AuthContext] Usuario con perfil:", profile);
                         updateUser({ ...session.user, ...profile });
                     } else {
                         // Fallback: usar solo datos de session
-                        console.warn('[AuthContext] Perfil no encontrado - usando session');
+                        console.warn("[AuthContext] Perfil no encontrado - usando session");
                         updateUser({
                             id: session.user.id,
                             email: session.user.email,
                             nickname: null,
-                            role: 'user',
-                            status: 'active'
+                            role: "user",
+                            status: "active"
                         });
                     }
                 } else {
@@ -117,7 +127,7 @@ export const AuthProvider = ({ children }) => {
         // Timeout de seguridad (3s)
         const timeoutId = setTimeout(() => {
             if (mounted && !sessionRestoredRef.current) {
-                console.warn("[AuthContext] Timeout - forcing guest mode");
+                console.warn("[AuthContext] Timeout - forzando el modo invitado");
                 setLoading(false);
             }
         }, 3000);
@@ -146,7 +156,7 @@ export const AuthProvider = ({ children }) => {
     const closeModal = () => setIsModalOpen(false);
 
     // Log de estado para debugging
-    console.log('[AuthContext] Rendering - user:', user, 'loading:', loading);
+    console.log("[AuthContext] Renderizando - user:", user, "loading:", loading);
 
     // --- RENDERIZADO DEL PROVEEDOR ---
     return (

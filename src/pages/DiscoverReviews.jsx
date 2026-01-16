@@ -41,9 +41,9 @@ export default function DiscoverReviews() {
             fetchProfessors();
         } else {
             // Si no, espera máximo 4 segundos y carga igual
-            console.log('[DiscoverReviews] Esperando auth...');
+            console.log("[DiscoverReviews] Esperando auth...");
             timeoutId = setTimeout(() => {
-                console.warn('[DiscoverReviews] Auth timeout - cargando datos');
+                console.warn("[DiscoverReviews] Auth timeout - cargando datos");
                 fetchProfessors();
             }, 4000);
         }
@@ -102,15 +102,19 @@ export default function DiscoverReviews() {
                     </h2>
                 </div>
 
+                {/* ✅ SKELETONS MIENTRAS CARGA */}
                 {loading ? (
-                    <div className="w-full h-64 flex items-center justify-center">
-                        <div className="text-stone-400 font-medium animate-pulse text-lg">Cargando profesores...</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+                        {[...Array(6)].map((_, i) => (
+                            <TeacherCard key={`skeleton-${i}`} isLoading={true} width="w-full" />
+                        ))}
                     </div>
                 ) : filteredProfessors.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
                         {filteredProfessors.map(prof => (
                             <TeacherCard
                                 key={prof.teacher_subject_id}
+                                isLoading={false}
                                 rating={prof.average_rating || 0}
                                 positiveComment={prof.latest_positive}
                                 constructiveComment={prof.latest_constructive}
@@ -127,7 +131,9 @@ export default function DiscoverReviews() {
                     </div>
                 ) : (
                     <div>
-                        <p className="text-stone-400 font-medium text-lg">No encontramos resultados para tu búsqueda.</p>
+                        <p className="text-stone-400 font-medium text-lg">
+                            No encontramos resultados para tu búsqueda.
+                        </p>
                     </div>
                 )}
             </main>

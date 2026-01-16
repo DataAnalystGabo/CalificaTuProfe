@@ -6,11 +6,10 @@ import PillBadge from "./PillBadge";
 import { FaBuildingColumns, FaBook, FaCommentDots } from "react-icons/fa6";
 import { RxStar, RxStarFilled } from "react-icons/rx";
 import { AiOutlineLike, AiOutlineDislike } from "react-icons/ai";
-import { MdOutlineLock } from "react-icons/md";
 
 // Función auxiliar para renderizar el número de estrellas
-const StarRating = ({ 
-    rating =  0, 
+const StarRating = ({
+    rating = 0,
     maxRating = 5,
     filledColor = "text-yellow-400",
     emptyColor = "text-stone-300"
@@ -24,7 +23,7 @@ const StarRating = ({
         const starColor = isFilled ? filledColor : emptyColor;
 
         stars.push(
-            <StarIcon 
+            <StarIcon
                 key={i}
                 className={`h-4 w-4 ${starColor}`}
             />
@@ -34,12 +33,57 @@ const StarRating = ({
     return <div className="flex space-x-0.5">{stars}</div>
 }
 
-export default function TeacherCard({ 
+// Skeleton interno
+function TeacherCardSkeleton({ width = "w-72", shadow = true }) {
+    return (
+        <div className={`
+            bg-white p-4 rounded-lg border border-stone-300 h-full flex flex-col
+            ${width}
+            ${shadow ? "shadow-md" : "shadow-none"}
+            animate-pulse
+        `}>
+            {/* Header */}
+            <div className="w-full pb-2 border-b border-stone-300">
+                <div className="h-5 bg-stone-300 rounded w-2/3 mb-2"></div>
+                <div className="space-y-1.5">
+                    <div className="h-3 bg-stone-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-stone-200 rounded w-2/3"></div>
+                    <div className="h-3 bg-stone-200 rounded w-1/2"></div>
+                </div>
+            </div>
+
+            {/* Comments */}
+            <div className="flex flex-col gap-3 mt-4 pb-4 grow border-b border-stone-300">
+                <div className="h-3 bg-stone-200 rounded w-20"></div>
+
+                {/* Positive comment skeleton */}
+                <div className="flex flex-col h-30 px-3 py-6 gap-2 border-l-4 border-emerald-300 bg-emerald-50 bg-emerald-50 rounded-r-md">
+                    <div className="h-3 bg-emerald-200 rounded w-16"></div>
+                    <div className="h-3 bg-emerald-200 rounded w-full"></div>
+                    <div className="h-3 bg-emerald-200 rounded w-5/6"></div>
+                </div>
+
+                {/* Constructive comment skeleton */}
+                <div className="flex flex-col h-30 px-3 py-6 gap-2 border-l-4 border-emerald-300 bg-emerald-50 bg-emerald-50 rounded-r-md">
+                    <div className="h-3 bg-emerald-200 rounded w-20"></div>
+                    <div className="h-3 bg-emerald-200 rounded w-full"></div>
+                    <div className="h-3 bg-emerald-200 rounded w-4/6"></div>
+                </div>
+            </div>
+
+            {/* Button */}
+            <div className="h-12 bg-stone-300 rounded-xl mt-4"></div>
+        </div>
+    );
+}
+
+export default function TeacherCard({
+    isLoading = false,
     rating,
     positiveComment,
     constructiveComment,
     qcomment,
-    teacherName, 
+    teacherName,
     subjectName,
     university,
     emptyColor,
@@ -47,34 +91,30 @@ export default function TeacherCard({
     shadow = true,
     width = "w-72",
     reviewDate,
-    tagsPillBadge = [],
-    isAuthenticated
+    tagsPillBadge = []
 }) {
     const navigate = useNavigate();
 
     // Obtenemos la función del contexto
     const { openRegister } = useAuth();
 
+    // Si está cargando, mostrar skeleton
+    if (isLoading) {
+        return <TeacherCardSkeleton width={width} shadow={shadow} />;
+    }
+
     // Función para manejar el botón de "Leer reseñas" de forma dinámica
     const handleAction = (e) => {
         e.preventDefault(); // evitamos cualquier comportamiento por defecto
-        
-        if (isAuthenticated) {
-            // Si el usuario está logueado, lo enviamos a la página de reseñas
-            navigate("/readReviews")
-        } else {
-            // Si no está logueado, abrimos el modal de registro
-            openRegister();
-        }
+        navigate("/readReviews");
     };
 
     return (
-
         <div className={`
             bg-white p-4 rounded-lg border border-stone-500 h-full flex flex-col
             transition-all duration-300 ease-in-out
             ${width}
-            ${shadow 
+            ${shadow
                 ? 'shadow-md hover:shadow-xl hover:-translate-y-1' /* Efecto Levitar */
                 : 'shadow-none'
             }
@@ -88,25 +128,25 @@ export default function TeacherCard({
                             {teacherName}
                         </p>
                     </div>
-                    
+
                     {/* Contenedor de categorías */}
                     <div className="flex flex-col space-y-1 mt-1 mb-1">
 
                         {/* Categoría: universidad */}
                         <div className="flex items-center text-sm text-stone-500">
-                            <FaBuildingColumns className="h-3 w-3 mr-1"/>
+                            <FaBuildingColumns className="h-3 w-3 mr-1" />
                             <span>{university}</span>
                         </div>
 
                         {/* Categoría: materia */}
                         <div className="flex items-center text-sm text-stone-500">
-                            <FaBook className="h-3 w-3 mr-1"/>
+                            <FaBook className="h-3 w-3 mr-1" />
                             <span>{subjectName}</span>
                         </div>
 
                         {/* Categoría: materia */}
                         <div className="flex items-center text-sm text-stone-500">
-                            <FaCommentDots className="h-3 w-3 mr-1"/>
+                            <FaCommentDots className="h-3 w-3 mr-1" />
                             <span>{qcomment}</span>
                         </div>
 
@@ -135,7 +175,7 @@ export default function TeacherCard({
                 {tagsPillBadge && tagsPillBadge.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-1 mb-1">
                         {tagsPillBadge.map((tag, index) => (
-                            <PillBadge 
+                            <PillBadge
                                 key={index} // Siempre agrega una key
                                 text={tag}
                                 bgColor="bg-white"
@@ -156,48 +196,32 @@ export default function TeacherCard({
 
                 {/* Bloque positivo */}
                 <div className="flex flex-col justify-center h-30 px-3 py-6 gap-1 border-l-4 border-emerald-400 bg-emerald-50 rounded-r-md">
-                    
+
                     <div className="flex items-center gap-1">
-                        <AiOutlineLike className="h-3 w-3 text-emerald-600"/>
+                        <AiOutlineLike className="h-3 w-3 text-emerald-600" />
                         <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
                             Lo mejor
                         </span>
                     </div>
 
                     <p className="text-stone-600 text-sm leading-relaxed line-clamp-2">
-                        "{positiveComment || "Sé el primero en comentar."}"
+                        "{positiveComment}"
                     </p>
 
                 </div>
 
                 {/* Bloque constructivo */}
-                <div className="relative flex flex-col justify-center h-30 px-3 py-6 gap-1 border-l-4 border-amber-400 bg-amber-50 rounded-r-md overflow-hidden">
-                
-                    {/* Contenido: Se blurea si NO está autenticado */}
-                    <div className={`flex flex-col gap-1 transition-all duration-500 ${!isAuthenticated ? 'blur-xs select-none': ''}`}>
-                        <div className="flex items-center gap-1">
-                            <AiOutlineDislike className="h-3 w-3 text-amber-600"/>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
-                                Podría mejorar
-                            </span>
-                        </div>
-                        
-                        <p className="text-stone-600 text-sm leading-relaxed italic line-clamp-2">
-                            "{constructiveComment || "Sé el primero en comentar."}"
-                        </p>
+                <div className="flex flex-col justify-center h-30 px-3 py-6 gap-1 border-l-4 border-amber-400 bg-amber-50 rounded-r-md">
+                    <div className="flex items-center gap-1">
+                        <AiOutlineDislike className="h-3 w-3 text-amber-600" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                            Podría mejorar
+                        </span>
                     </div>
 
-                    {/* Overlay de Bloqueo: Solo aparece si NO está autenticado */}
-                    {!isAuthenticated && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                            <MdOutlineLock className="h-5 w-5 text-amber-700 mb-1"/>
-                            <button 
-                                onClick={openRegister}
-                                className="text-sm font-medium tracking-tighter text-amber-800 px-2 py-0.5 cursor-pointer">
-                                Registrate para leer
-                            </button>
-                        </div>
-                    )}
+                    <p className="text-stone-600 text-sm leading-relaxed italic line-clamp-2">
+                        "{constructiveComment}"
+                    </p>
                 </div>
             </div>
 
@@ -209,5 +233,5 @@ export default function TeacherCard({
                 Leer reseñas
             </button>
         </div>
-    )
+    );
 }
