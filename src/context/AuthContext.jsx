@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
     // --- LÓGICA DE RECUPERACIÓN DE DATOS ---
     const fetchUserProfile = async (userId, attempt = 1) => {
         const MAX_ATTEMPTS = 3;
-        const timeout = 3000 + (attempt * 2000); // 3s + 2s por intento
+        const timeout = 10000 + (attempt * 2000); // 3s + 2s por intento
 
         try {
             console.log(`[fetchUserProfile] Intento ${attempt}/${MAX_ATTEMPTS} - Timeout: ${timeout}ms`);
@@ -133,7 +133,12 @@ export const AuthProvider = ({ children }) => {
                         }
                     }
                 } else {
+                    // Sin sesión - limpiar todo
                     updateUser(null);
+
+                    // Limpiamos caché de profesores
+                    localStorage.removeItem("TEACHER_DATA_CACHE");
+                    console.log("[AuthContext] Sesión expirada - caché borrada.");
                 }
 
                 setLoading(false);

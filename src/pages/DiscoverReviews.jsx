@@ -7,25 +7,22 @@ import { formatRelativeDate } from "../utils/formatDate";
 import { useAuth } from "../context/AuthContext";
 
 export default function DiscoverReviews() {
-    // Obtener el estado de autenticarión real
     const { isAuthenticated, loading: authLoading } = useAuth();
-
-    // Estados para los datos de la DB y el estado de cara
     const [professors, setProfessors] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
 
-    // Efecto par cargar los datos al montar el componente
     useEffect(() => {
         let mounted = true;
         let timeoutId;
 
         const fetchProfessors = async () => {
+            // Evitamos cargar datos si no hay usuario autenticado
+            if (!isAuthenticated) return;
 
             if (mounted) setLoading(true);
 
             try {
-                // Ejecutamos la consulta directamente
                 const data = await getTeacherSummary();
                 if (mounted) setProfessors(data || []);
             } catch (error) {
@@ -36,15 +33,21 @@ export default function DiscoverReviews() {
             }
         };
 
-        // Si authLoading ya terminó, carga inmediatamente
         if (!authLoading) {
-            fetchProfessors();
+            // Solo intentamos cargar si está autenticado
+            if (isAuthenticated) {
+                fetchProfessors();
+            }
         } else {
-            // Si no, espera máximo 4 segundos y carga igual
             console.log("[DiscoverReviews] Esperando auth...");
             timeoutId = setTimeout(() => {
-                console.warn("[DiscoverReviews] Auth timeout - cargando datos");
-                fetchProfessors();
+                // Validación adicional post-timeout
+                if (isAuthenticated) {
+                    console.warn("[DiscoverReviews] Auth timeout - cargando datos");
+                    fetchProfessors();
+                } else {
+                    console.log("[DiscoverReviews] Auth timeout - usuario no autenticado, abortando carga.");
+                }
             }, 4000);
         }
 
@@ -54,17 +57,25 @@ export default function DiscoverReviews() {
         };
     }, [authLoading]);
 
-    // Filtrado sobre los datos recibidos desde Supabase para el buscador
     const filteredProfessors = professors.filter(p =>
         (p.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (p.subject_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (p.university?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
+    // Mostrar pantalla de verificación mientras valida sesión
+    if (authLoading) {
+        return (
+            <div className="w-full min-h-screen bg-stone-50 pt-16 flex items-center justify-center">
+                <div className="text-stone-400 font-medium animate-pulse text-lg">
+                    Verificando sesión...
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full min-h-screen bg-stone-50 pt-16">
-
-            {/* Barra de Control */}
             <div className="sticky top-17 z-20 py-8 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm transition-all">
                 <div className="max-w-2xl mx-auto flex flex-col gap-6 px-4">
                     <Search
@@ -73,28 +84,19 @@ export default function DiscoverReviews() {
                     />
 
                     <div className="w-full flex flex-wrap justify-start gap-2">
-                        <Button
-                            onClick={() => console.log("Filtro Facultad")}
-                        >
+                        <Button onClick={() => console.log("Filtro Facultad")}>
                             Universidad
                         </Button>
-
-                        <Button
-                            onClick={() => console.log("Filtro Materia")}
-                        >
+                        <Button onClick={() => console.log("Filtro Materia")}>
                             Materia
                         </Button>
-
-                        <Button
-                            onClick={() => console.log("Filtro Profesor")}
-                        >
+                        <Button onClick={() => console.log("Filtro Profesor")}>
                             Profesor
                         </Button>
                     </div>
                 </div>
             </div>
 
-            {/* Contenido Principal / Grilla de Resultados */}
             <main className="max-w-7xl mx-auto px-4 py-12">
                 <div className="mb-8">
                     <h2 className="text-2xl font-black text-stone-700 uppercase tracking-tight">
@@ -102,7 +104,6 @@ export default function DiscoverReviews() {
                     </h2>
                 </div>
 
-                {/* ✅ SKELETONS MIENTRAS CARGA */}
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
                         {[...Array(6)].map((_, i) => (
@@ -125,7 +126,6 @@ export default function DiscoverReviews() {
                                 width="w-full"
                                 reviewDate={formatRelativeDate(prof.last_review_date)}
                                 tagsPillBadge={[]}
-                                isAuthenticated={isAuthenticated}
                             />
                         ))}
                     </div>
@@ -138,5 +138,5 @@ export default function DiscoverReviews() {
                 )}
             </main>
         </div>
-    )
-};
+    );
+}

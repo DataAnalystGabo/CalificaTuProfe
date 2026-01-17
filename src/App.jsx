@@ -1,47 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import AuthShell from "./components/Auth/AuthShell";
+import MainLayout from "./components/MainLayout";
 
-// --- PAGINAS Y COMPONENTES GLOBALES ---
+// --- PAGINAS ---
 import LandingPage from "./pages/LandingPage";
 import DiscoverReviews from "./pages/DiscoverReviews";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
-import Header from "./components/Header";
-import MobileMenu from "./components/MobileMenu";
 
 function App() {
-
-    // Estado único para el menú móvil (controla Header y MobileMenu)
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    // Funciones de control
-    const openMenu = () => setIsMenuOpen(true);
-    const closeMenu = () => setIsMenuOpen(false);
-
     return (
         <AuthProvider>
             <Router>
-                <div className="min-h-screen bg-stone-50 flex flex-col">
-                    {/* Header Global  */}
-                    <Header onMenuToggle={openMenu} />
-                    <MobileMenu isOpen={isMenuOpen} onClose={closeMenu} />
+                <Routes>
+                    {/* Ruta Login Dedicada (Sin Layout) */}
+                    <Route path="/login" element={<AuthPage />} />
 
-                    {/* Contenedor de Rutas */}
-                    <div className="grow">
-                        <Routes>
-                            {/* Ruta: Landing Page */}
-                            <Route path="/" element={<LandingPage />} />
-
-                            {/* Ruta: Explorar */}
-                            <Route path="/explorar" element={<DiscoverReviews />} />
-                            
-                            {/* Ruta: Not Found */}
-                            <Route path="*" element={<NotFound />}/>
-                        </Routes>
-                    </div>
-                </div>
-                <AuthShell />
+                    {/* Rutas Principales (Con Header, AuthShell, etc) */}
+                    <Route element={<MainLayout />}>
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/explorar" element={<DiscoverReviews />} />
+                        <Route path="*" element={<NotFound />} />
+                    </Route>
+                </Routes>
             </Router>
         </AuthProvider>
     );
