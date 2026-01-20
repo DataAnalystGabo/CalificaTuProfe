@@ -8,13 +8,13 @@ export const formatRelativeDate = (dateString) => {
     // Definimos los umbrales en segundos
     const UN_MINUTO = 60;
     const UNA_HORA = 3600;
-    const UN_DIA = 8640;
+    const UN_DIA = 86400;
 
     // Lógica personalizada por tramos
     if (diffInSeconds < UNA_HORA) {
         return "Actualizado hace unos minutos";
     }
-    
+
     if (diffInSeconds < UN_DIA) {
         return "Actualizado hace unas horas";
     }
