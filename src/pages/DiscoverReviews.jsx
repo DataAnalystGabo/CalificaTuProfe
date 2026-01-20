@@ -43,10 +43,7 @@ export default function DiscoverReviews() {
             timeoutId = setTimeout(() => {
                 // Validación adicional post-timeout
                 if (isAuthenticated) {
-                    console.warn("[DiscoverReviews] Auth timeout - cargando datos");
                     fetchProfessors();
-                } else {
-                    console.log("[DiscoverReviews] Auth timeout - usuario no autenticado, abortando carga.");
                 }
             }, 4000);
         }
@@ -112,31 +109,36 @@ export default function DiscoverReviews() {
                     </div>
                 ) : filteredProfessors.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-                        {filteredProfessors.map(prof => (
-                            <TeacherCard
-                                key={prof.teacher_subject_id}
-                                isLoading={false}
-                                rating={prof.average_rating || 0}
-                                positiveComment={prof.latest_positive}
-                                constructiveComment={prof.latest_constructive}
-                                qcomment={`${prof.total_reviews} reseñas`}
-                                teacherName={prof.full_name}
-                                subjectName={prof.subject_name}
-                                university={prof.university}
-                                width="w-full"
-                                reviewDate={formatRelativeDate(prof.last_review_date)}
-                                tagsPillBadge={[]}
-                            />
-                        ))}
+                        {filteredProfessors.map(prof => {
+                            // Asumimos que top_tags viene como array de objetos desde Supabase
+                            const topTags = Array.isArray(prof.top_tags) ? prof.top_tags : [];
+
+                            return (
+                                <TeacherCard
+                                    key={prof.teacher_subject_id}
+                                    isLoading={false}
+                                    rating={prof.average_rating || 0}
+                                    positiveComment={prof.latest_positive}
+                                    constructiveComment={prof.latest_constructive}
+                                    qcomment={`${prof.total_reviews} reseñas`}
+                                    teacherName={prof.full_name}
+                                    subjectName={prof.subject_name}
+                                    university={prof.university}
+                                    width="w-full"
+                                    reviewDate={formatRelativeDate(prof.last_review_date)}
+                                    topTags={topTags}
+                                />
+                            );
+                        })}
                     </div>
                 ) : (
-                    <div>
+                    < div >
                         <p className="text-stone-400 font-medium text-lg">
                             No encontramos resultados para tu búsqueda.
                         </p>
                     </div>
                 )}
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }

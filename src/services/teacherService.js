@@ -22,11 +22,10 @@ export const getTeacherSummary = async () => {
         // 2. Consultar a Supabase con retry logic
         const fetchWithRetry = async (attempt = 1) => {
             const MAX_ATTEMPTS = 3;
-            const timeout = 10000 + (attempt * 5000); // 10s, 15s, 20s
+            // Aumentar timeout por intento: 10s, 15s, 20s
+            const timeout = 10000 + (attempt * 5000);
 
             try {
-                console.log(`[teacherService] Intento ${attempt}/${MAX_ATTEMPTS} - Timeout: ${timeout}ms`);
-
                 const queryPromise = supabase
                     .from("teacher_summary")
                     .select("*");
@@ -41,15 +40,13 @@ export const getTeacherSummary = async () => {
 
                 if (error) throw error;
 
-                console.log(`[teacherService] ✅ Éxito en intento ${attempt} - ${data.length} profesores`);
                 return { data, error: null };
 
             } catch (error) {
-                console.warn(`[teacherService] ❌ Intento ${attempt} falló:`, error.message);
+                console.warn(`[teacherService] Intento ${attempt} falló:`, error.message);
 
                 if (attempt < MAX_ATTEMPTS) {
-                    const backoffTime = 2000 * attempt; // 2s, 4s
-                    console.log(`[teacherService] Esperando ${backoffTime}ms antes de reintentar...`);
+                    const backoffTime = 2000 * attempt;
                     await new Promise(resolve => setTimeout(resolve, backoffTime));
                     return fetchWithRetry(attempt + 1);
                 }
@@ -73,7 +70,6 @@ export const getTeacherSummary = async () => {
 
         // 3. Guardar en caché si la respuesta es exitosa
         if (data && data.length > 0) {
-            console.log(`[teacherService] Guardando ${data.length} profesores en caché`);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 data: data,
                 timestamp: Date.now()

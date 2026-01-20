@@ -91,12 +91,9 @@ export default function TeacherCard({
     shadow = true,
     width = "w-72",
     reviewDate,
-    tagsPillBadge = []
+    topTags = []
 }) {
     const navigate = useNavigate();
-
-    // Obtenemos la función del contexto
-    const { openRegister } = useAuth();
 
     // Si está cargando, mostrar skeleton
     if (isLoading) {
@@ -155,7 +152,7 @@ export default function TeacherCard({
             </div>
 
             {/* Estrellas de puntuación */}
-            <div className="flex flex-col md:flex-row justify-start items-start md:items-center gap-4 mt-4">
+            <div className="flex flex-col justify-start items-start gap-4 mt-4">
 
                 <div className="w-auto flex flex-row px-3 py-0.5 gap-2 items-center justify-center bg-stone-50 rounded-2xl  border border-stone-400">
                     <span className="font-bold text-stone-500">
@@ -172,12 +169,12 @@ export default function TeacherCard({
                 </div>
 
                 {/* Solo renderizamos este div si el array tiene elementos */}
-                {tagsPillBadge && tagsPillBadge.length > 0 && (
+                {topTags && topTags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-1 mb-1">
-                        {tagsPillBadge.map((tag, index) => (
+                        {topTags.slice(0, 3).map((tag, index) => (
                             <PillBadge
-                                key={index} // Siempre agrega una key
-                                text={tag}
+                                key={tag.name || index}
+                                text={tag.name}
                                 bgColor="bg-white"
                                 borderColor="border-stone-300"
                                 textColor="text-stone-500"
