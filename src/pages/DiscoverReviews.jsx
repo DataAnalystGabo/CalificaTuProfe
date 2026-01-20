@@ -43,7 +43,10 @@ export default function DiscoverReviews() {
             timeoutId = setTimeout(() => {
                 // Validación adicional post-timeout
                 if (isAuthenticated) {
+                    console.warn("[DiscoverReviews] Auth timeout - cargando datos");
                     fetchProfessors();
+                } else {
+                    console.log("[DiscoverReviews] Auth timeout - usuario no autenticado, abortando carga.");
                 }
             }, 4000);
         }

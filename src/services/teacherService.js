@@ -46,7 +46,8 @@ export const getTeacherSummary = async () => {
                 console.warn(`[teacherService] Intento ${attempt} falló:`, error.message);
 
                 if (attempt < MAX_ATTEMPTS) {
-                    const backoffTime = 2000 * attempt;
+                    const backoffTime = 2000 * attempt; // 2s, 4s
+                    console.log(`[teacherService] Esperando ${backoffTime}ms antes de reintentar...`);
                     await new Promise(resolve => setTimeout(resolve, backoffTime));
                     return fetchWithRetry(attempt + 1);
                 }
@@ -70,6 +71,7 @@ export const getTeacherSummary = async () => {
 
         // 3. Guardar en caché si la respuesta es exitosa
         if (data && data.length > 0) {
+            console.log(`[teacherService] Guardando ${data.length} profesores en caché`);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 data: data,
                 timestamp: Date.now()

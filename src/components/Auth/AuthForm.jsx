@@ -50,10 +50,18 @@ export default function AuthForm({ mode = "login", onSuccess, onSwitchMode }) {
 
                 {/* Input de email */}
                 <div className="relative">
-                    <label className="text-xs font-bold text-stone-500 uppercase ml-1">Email</label>
+                    <label
+                        htmlFor="email"
+                        className="text-xs font-bold text-stone-500 uppercase ml-1"
+                    >
+                        Email
+                    </label>
                     <div className="relative mt-1 group">
                         <MdOutlineEmail className="absolute h-5 w-5 left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-sky-500" />
                         <input
+                            id="email"
+                            name="email"
+                            autoComplete="email"
                             type="email"
                             required
                             value={email}
@@ -66,10 +74,18 @@ export default function AuthForm({ mode = "login", onSuccess, onSwitchMode }) {
 
                 {/* Input de Password */}
                 <div className="relative">
-                    <label className="text-xs font-bold text-stone-500 uppercase ml-1">Contraseña</label>
+                    <label
+                        htmlFor="password"
+                        className="text-xs font-bold text-stone-500 uppercase ml-1"
+                    >
+                        Contraseña
+                    </label>
                     <div className="relative mt-1 group">
                         <MdOutlineLock className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 h-5 w-5 group-focus-within:text-sky-500" />
                         <input
+                            id="password"
+                            name="password"
+                            autoComplete={mode === "login" ? "current-password" : "new-password"}
                             type="password"
                             required
                             value={password}

@@ -9,23 +9,23 @@ import React from "react";
 
 // Icono del menú
 const SearchIcon = () => (
-    <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        className="h-5 w-5 text-stone-400 group-focus-within:text-sky-500 transition-colors" 
-        fill="none" 
-        viewBox="0 0 24 24" 
-        stroke="currentColor" 
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5 text-stone-400 group-focus-within:text-sky-500 transition-colors"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
         strokeWidth={2}
     >
-        <path 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         />
     </svg>
 );
 
-export default function Search({ value, onChange, placeholder = "Buscar profesor, materia o universidad..."}) {
+export default function Search({ value, onChange, placeholder = "Buscar profesor, materia o universidad...", id = "search", name = "search", autoComplete = "off" }) {
     return (
         <div className="relative w-full mx-auto group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -33,8 +33,11 @@ export default function Search({ value, onChange, placeholder = "Buscar profesor
             </div>
 
             {/* Input de búsqueda */}
-            <input 
-                type="text" 
+            <input
+                id={id}
+                name={name}
+                autoComplete={autoComplete}
+                type="text"
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
