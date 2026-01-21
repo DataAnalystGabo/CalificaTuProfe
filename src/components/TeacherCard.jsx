@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PillBadge from "./PillBadge";
+import { getTagConfig } from "../utils/tagIcons";
 
 import { FaBuildingColumns, FaBook, FaCommentDots } from "react-icons/fa6";
 import { IoIosStar, IoIosStarHalf, IoIosStarOutline } from "react-icons/io";
@@ -177,15 +178,19 @@ export default function TeacherCard({
                 {/* Solo renderizamos este div si el array tiene elementos */}
                 {topTags && topTags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-1 mb-1">
-                        {topTags.slice(0, 3).map((tag, index) => (
-                            <PillBadge
-                                key={tag.name || index}
-                                text={tag.name}
-                                bgColor="bg-white"
-                                borderColor="border-stone-300"
-                                textColor="text-stone-500"
-                            />
-                        ))}
+                        {topTags.slice(0, 3).map((tag, index) => {
+                            const config = getTagConfig(tag.name);
+                            return (
+                                <PillBadge
+                                    key={tag.name || index}
+                                    icon={config.icon}
+                                    text={tag.name}
+                                    bgColor={config.bgColor}
+                                    borderColor={config.borderColor}
+                                    textColor={config.textColor}
+                                />
+                            );
+                        })}
                     </div>
                 )}
             </div>
