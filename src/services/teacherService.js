@@ -3,27 +3,40 @@ import { supabase } from "../supabaseClient";
 const CACHE_KEY = "TEACHER_DATA_CACHE";
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hora
 
-export const getTeacherSummary = async () => {
+/**
+ * Obtiene los datos del localStorage síncronamente.
+ * @returns {Array|null} Datos cacheados o null si no existen/expiraron
+ */
+export const getLocalTeacherCache = () => {
     try {
-        // 1. Intentar obtener datos del caché local
         const cachedRaw = localStorage.getItem(CACHE_KEY);
-        if (cachedRaw) {
-            const { data, timestamp } = JSON.parse(cachedRaw);
-            const isExpired = (Date.now() - timestamp) > CACHE_DURATION;
+        if (!cachedRaw) return null;
 
-            if (!isExpired && data && data.length > 0) {
-                console.log("Sirviendo datos de profesores desde caché (Carga instantánea)");
-                return data;
-            }
+        const { data, timestamp } = JSON.parse(cachedRaw);
+        const isExpired = (Date.now() - timestamp) > CACHE_DURATION;
+
+        if (isExpired) {
+            console.log("[teacherService] Caché expirado.");
+            return null;
         }
 
-        console.log("Cache miss o expirado. Consultando Supabase...");
+        return data;
+    } catch (e) {
+        console.error("[teacherService] Error leyendo caché:", e);
+        return null;
+    }
+};
 
-        // 2. Consultar a Supabase con retry logic
+export const getTeacherSummary = async () => {
+    try {
+        console.log("[teacherService] Iniciando consulta a Supabase...");
+
+        // Configuración de reintentos
+        const MAX_ATTEMPTS = 4;
+
         const fetchWithRetry = async (attempt = 1) => {
-            const MAX_ATTEMPTS = 3;
-            // Aumentar timeout por intento: 10s, 15s, 20s
-            const timeout = 10000 + (attempt * 5000);
+            // Tiempos de timeout incrementales: 10s, 15s, 20s, 25s
+            const timeout = 5000 + (attempt * 5000);
 
             try {
                 const queryPromise = supabase
@@ -32,7 +45,7 @@ export const getTeacherSummary = async () => {
 
                 const timeoutPromise = new Promise((_, reject) =>
                     setTimeout(() => {
-                        reject(new Error("Timeout en consulta a teacher_summary"));
+                        reject(new Error(`Timeout en intento ${attempt} (${timeout}ms)`));
                     }, timeout)
                 );
 
@@ -46,13 +59,13 @@ export const getTeacherSummary = async () => {
                 console.warn(`[teacherService] Intento ${attempt} falló:`, error.message);
 
                 if (attempt < MAX_ATTEMPTS) {
-                    const backoffTime = 2000 * attempt; // 2s, 4s
+                    const backoffTime = 2000 * attempt; // 2s, 4s, 6s
                     console.log(`[teacherService] Esperando ${backoffTime}ms antes de reintentar...`);
                     await new Promise(resolve => setTimeout(resolve, backoffTime));
                     return fetchWithRetry(attempt + 1);
                 }
 
-                console.error("[teacherService] Todos los intentos fallaron");
+                console.error("[teacherService] Todos los intentos han fallado.");
                 return { data: null, error };
             }
         };
@@ -60,18 +73,12 @@ export const getTeacherSummary = async () => {
         const { data, error } = await fetchWithRetry();
 
         if (error) {
-            console.error("Error al obtener datos de Supabase:", error.message);
-            // Fallback: devolver caché viejo si existe
-            if (cachedRaw) {
-                console.warn("Usando caché antiguo debido a error de red");
-                return JSON.parse(cachedRaw).data;
-            }
-            return [];
+            throw error; // Lanzamos para manejarlo en el componente
         }
 
-        // 3. Guardar en caché si la respuesta es exitosa
+        // Guardar en caché si la respuesta es exitosa
         if (data && data.length > 0) {
-            console.log(`[teacherService] Guardando ${data.length} profesores en caché`);
+            console.log(`[teacherService] Guardando ${data.length} registros en caché.`);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 data: data,
                 timestamp: Date.now()
@@ -79,13 +86,10 @@ export const getTeacherSummary = async () => {
         }
 
         return data || [];
+
     } catch (err) {
-        console.error("Error inesperado en el servicio:", err);
-        // Fallback de emergencia
-        const cachedRaw = localStorage.getItem(CACHE_KEY);
-        if (cachedRaw) {
-            return JSON.parse(cachedRaw).data;
-        }
-        return [];
+        // Propagamos el error para que el componente decida usar el caché de respaldo
+        console.error("[teacherService] Error final:", err.message);
+        throw err;
     }
 };

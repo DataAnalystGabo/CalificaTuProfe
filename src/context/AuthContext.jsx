@@ -72,10 +72,10 @@ export const AuthProvider = ({ children }) => {
 
             if (error) throw error;
 
-            console.log(`[fetchUserProfile] ✅ Éxito en intento ${attempt}:`, data);
+            console.log(`[fetchUserProfile] Éxito en intento ${attempt}:`, data);
             return data;
         } catch (error) {
-            console.warn(`[fetchUserProfile] ❌ Intento ${attempt} falló:`, error.message);
+            console.warn(`[fetchUserProfile] Intento ${attempt} falló:`, error.message);
 
             if (attempt < MAX_ATTEMPTS) {
                 // Esperar antes de reintentar (1s, 2s)

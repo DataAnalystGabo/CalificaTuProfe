@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Search from "../components/Search";
 import Button from "../components/Button";
 import TeacherCard from "../components/TeacherCard";
-import { getTeacherSummary } from "../services/teacherService";
+import { getTeacherSummary, getLocalTeacherCache } from "../services/teacherService";
 import { formatRelativeDate } from "../utils/formatDate";
 import { useAuth } from "../context/AuthContext";
 
@@ -22,14 +22,67 @@ export default function DiscoverReviews() {
 
             if (mounted) setLoading(true);
 
-            try {
-                const data = await getTeacherSummary();
-                if (mounted) setProfessors(data || []);
-            } catch (error) {
-                console.error("Error capturado:", error.message);
-                if (mounted) setProfessors([]);
-            } finally {
-                if (mounted) setLoading(false);
+            // Variable para controlar si ya mostramos datos (para evitar "parpadeo" si la red responde justo después del caché)
+            let dataShown = false;
+
+            // RACE STRATEGY:
+            // 1. Iniciamos la petición a RED.
+            const networkPromise = getTeacherSummary()
+                .then(data => ({ source: 'network', data }))
+                .catch(error => ({ source: 'network', error }));
+
+            // 2. Iniciamos un TIMER de fallback (ej: 2.5 segundos).
+            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ source: 'timeout' }), 2500));
+
+            // 3. Esperamos a que gane el primero (o red rápida o el timer).
+            const winner = await Promise.race([networkPromise, timeoutPromise]);
+
+            if (winner.source === 'timeout') {
+                console.warn("[DiscoverReviews] Red lenta. Intentando mostrar caché local mientras la red termina...");
+                const cachedData = getLocalTeacherCache();
+                if (cachedData && mounted && !dataShown) {
+                    setProfessors(cachedData);
+                    setLoading(false); // Quitamos skeleton
+                    dataShown = true;
+                }
+            } else if (winner.source === 'network' && !winner.error) {
+                // Red ganó y fue exitosa
+                console.log("[DiscoverReviews] Red respondió rápido. Mostrando datos frescos.");
+                if (mounted) {
+                    setProfessors(winner.data || []);
+                    setLoading(false);
+                    dataShown = true;
+                    // Ya terminamos, no necesitamos esperar nada más (salvo que quieras asegurar que el otro promise no afecte, pero aquí es lineal)
+                    return;
+                }
+            }
+
+            // 4. Si ganó el timeout (ya mostramos caché), AÚN debemos esperar a la red para actualizar (o fallar).
+            // O si la red ganó pero falló (error).
+            if (winner.source === 'timeout' || (winner.source === 'network' && winner.error)) {
+                // Si fue timeout, networkPromise sigue corriendo. Esperamos su resultado final.
+                // Si fue error de red inmediato, ya lo tenemos.
+
+                try {
+                    const result = winner.source === 'network' ? winner : await networkPromise;
+
+                    if (result.error) throw result.error;
+
+                    // Si llegó data fresca y es diferente/nueva, actualizamos.
+                    if (mounted) {
+                        console.log("[DiscoverReviews] Datos frescos llegaron (post-timeout). Actualizando vista.");
+                        setProfessors(result.data || []);
+                        setLoading(false);
+                    }
+                } catch (err) {
+                    console.error("Fallo definitivo de red:", err.message);
+                    // Si no habíamos mostrado nada (ni caché), ahora sí no queda otra que mostrar vacío o caché si existe y no se usó
+                    if (mounted && !dataShown) {
+                        const fallbackCache = getLocalTeacherCache();
+                        setProfessors(fallbackCache || []);
+                        setLoading(false);
+                    }
+                }
             }
         };
 
