@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import PillBadge from "./PillBadge";
 
 import { FaBuildingColumns, FaBook, FaCommentDots } from "react-icons/fa6";
-import { RxStar, RxStarFilled } from "react-icons/rx";
+import { IoIosStar, IoIosStarHalf, IoIosStarOutline } from "react-icons/io";
 import { AiOutlineLike, AiOutlineDislike } from "react-icons/ai";
 
 // Función auxiliar para renderizar el número de estrellas
@@ -13,14 +13,20 @@ const StarRating = ({
     maxRating = 5,
     filledColor = "text-yellow-400",
     emptyColor = "text-stone-300"
-
 }) => {
     const stars = [];
 
     for (let i = 1; i <= maxRating; i++) {
-        const isFilled = i <= rating;
-        const StarIcon = isFilled ? RxStarFilled : RxStar;
-        const starColor = isFilled ? filledColor : emptyColor;
+        let StarIcon = IoIosStarOutline;
+        let starColor = emptyColor;
+
+        if (rating >= i) {
+            StarIcon = IoIosStar;
+            starColor = filledColor;
+        } else if (rating >= i - 0.5) {
+            StarIcon = IoIosStarHalf;
+            starColor = filledColor;
+        }
 
         stars.push(
             <StarIcon
