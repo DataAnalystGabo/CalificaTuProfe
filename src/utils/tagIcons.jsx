@@ -20,7 +20,7 @@ const TAG_STYLES = {
         icon: FiClipboard,
         bgColor: "bg-sky-50",
         borderColor: "border-sky-400",
-        textColor: "ttext-sky-600"
+        textColor: "text-sky-600"
     },
     "Explica claro": {
         icon: FiCoffee,
