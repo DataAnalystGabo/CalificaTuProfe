@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { authService } from "../../services/authService";
 import { MdOutlineLock, MdOutlineEmail } from "react-icons/md";
+import LoadingSpinner  from "../../components/LoadingSpinner";
 
 export default function AuthForm({ mode = "login", onSuccess, onSwitchMode }) {
     // --- ESTADOS DEL FORMULARIO Y CARGA ---
@@ -107,8 +108,9 @@ export default function AuthForm({ mode = "login", onSuccess, onSwitchMode }) {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full mt-2 py-4 bg-stone-800 hover:bg-stone-900 text-white font-bold rounded-xl transition-all shadow-lg shadow-stone-200 disabled:opacity-50 cursor-pointer"
+                    className="w-full mt-2 py-4 bg-stone-800 hover:bg-stone-900 text-white font-bold rounded-xl transition-all shadow-lg shadow-stone-200 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                 >
+                    {loading && <LoadingSpinner size={20} color="#FFFFFF" />}
                     {loading ? "Procesando..." : (mode === "login" ? "Entrar" : "Crear cuenta")}
                 </button>
             </form>
