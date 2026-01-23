@@ -1,15 +1,18 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { MdOutlineClose } from "react-icons/md";
 import { FaPerson, FaChartColumn } from "react-icons/fa6";
 import { TbLogout2 } from "react-icons/tb";
+import LoadingSpinner from "./LoadingSpinner";
 
 export default function MobileMenu({ isOpen, onClose }) {
 
     // Extraemos las funciones del contexto dentro del componente
     const { isAuthenticated, user, signOut, openLogin, openRegister } = useAuth();
     const navigate = useNavigate();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     return (
         <>
@@ -64,14 +67,19 @@ export default function MobileMenu({ isOpen, onClose }) {
                                 <button
                                     onClick={
                                         async () => {
+                                            if (isLoggingOut) return;
+                                            setIsLoggingOut(true);
                                             await signOut();
                                             onClose();
                                             navigate("/"); // Redirección
+                                            setIsLoggingOut(false);
                                         }
                                     }
-                                    className="flex items-center gap-3 w-full px-4 py-3 text-red-500 font-medium rounded-xl hover:bg-red-50 transition-all cursor-pointer"
+                                    disabled={isLoggingOut}
+                                    className="flex items-center gap-3 w-full px-4 py-3 text-red-500 font-medium rounded-xl hover:bg-red-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <TbLogout2 className="text-xl" /> Cerrar sesión
+                                    {isLoggingOut ? <LoadingSpinner size={20} color="#ef4444" /> : <TbLogout2 className="text-xl" />}
+                                    {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
                                 </button>
                             </div>
                         </>
