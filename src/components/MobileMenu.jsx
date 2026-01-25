@@ -51,14 +51,14 @@ export default function MobileMenu({ isOpen, onClose }) {
                             <Link
                                 to="/perfil"
                                 onClick={onClose}
-                                className="flex items-center gap-3 px-4 py-3 text-stone-600 rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                                className="flex items-center gap-3 px-4 py-3 text-stone-600 rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all border border-transparent hover:border-stone-200 cursor-pointer"
                             >
                                 <FaPerson className="text-lg" /> Mi perfil
                             </Link>
                             <Link
                                 to="/estadisticas"
                                 onClick={onClose}
-                                className="flex items-center gap-3 px-4 py-3 text-stone-600  rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all"
+                                className="flex items-center gap-3 px-4 py-3 text-stone-600  rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all border border-transparent hover:border-stone-200 cursor-pointer"
                             >
                                 <FaChartColumn className="text-lg" /> Mis estadísticas
                             </Link>
@@ -76,7 +76,7 @@ export default function MobileMenu({ isOpen, onClose }) {
                                         }
                                     }
                                     disabled={isLoggingOut}
-                                    className="flex items-center gap-3 w-full px-4 py-3 text-red-500 font-medium rounded-xl hover:bg-red-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex items-center gap-3 w-full px-4 py-3 text-red-500 font-medium rounded-xl hover:bg-red-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-red-200"
                                 >
                                     {isLoggingOut ? <LoadingSpinner size={20} color="#ef4444" /> : <TbLogout2 className="text-xl" />}
                                     {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
@@ -88,13 +88,13 @@ export default function MobileMenu({ isOpen, onClose }) {
                             {/* Opciones de Invitado */}
                             <button
                                 onClick={() => { openLogin(); onClose(); }}
-                                className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer"
+                                className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer border border-transparent hover:border-stone-200"
                             >
                                 Iniciar Sesión
                             </button>
                             <button
                                 onClick={() => { openRegister(); onClose(); }}
-                                className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer"
+                                className="block px-4 py-3 text-stone-600 text-start font-medium rounded-xl hover:bg-stone-50 hover:text-sky-600 transition-all cursor-pointer border border-transparent hover:border-stone-200"
                             >
                                 Registrarse
                             </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MdOutlineClose } from 'react-icons/md';
-import Button from '../Button'; // Reusing existing Button component if compatible, or standard buttons
+import { FaCheck } from "react-icons/fa6";
 
 export default function FilterModal({ isOpen, onClose, title, options, initialSelected = [], onApply }) {
     const [selected, setSelected] = useState(initialSelected);
@@ -60,15 +60,18 @@ export default function FilterModal({ isOpen, onClose, title, options, initialSe
                             return (
                                 <label 
                                     key={index} 
-                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-stone-50 cursor-pointer transition-colors border border-transparent hover:border-stone-200"
+                                    className="group flex items-center gap-3 p-3 rounded-xl hover:bg-stone-50 cursor-pointer transition-colors border border-transparent hover:border-stone-200"
                                 >
-                                    <input 
-                                        type="checkbox"
-                                        checked={selected.includes(value)}
-                                        onChange={() => toggleOption(value)}
-                                        className="w-5 h-5 rounded border-stone-300 text-sky-500 focus:ring-sky-500/20 accent-sky-500 cursor-pointer"
-                                    />
-                                    <span className="text-stone-600 font-medium cursor-pointer">{label}</span>
+                                    <div className="relative flex items-center justify-center">
+                                        <input 
+                                            type="checkbox"
+                                            checked={selected.includes(value)}
+                                            onChange={() => toggleOption(value)}
+                                            className="peer w-5 h-5 rounded border border-stone-300 appearance-none checked:bg-sky-500 checked:border-sky-500 cursor-pointer transition-all group-hover:border-sky-500"
+                                        />
+                                        <FaCheck className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+                                    </div>
+                                    <span className="text-stone-600 font-medium cursor-pointer group-hover:text-sky-600 transition-colors">{label}</span>
                                 </label>
                             );
                         })}
