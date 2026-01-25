@@ -24,24 +24,28 @@ export default function Button({
     onClick, 
     icon: Icon,
     hasChevron = true, 
-    className = "" 
+    className = "",
+    active = false
 }) {
     return (
         <button
             onClick={onClick}
             className={`
                 flex items-center gap-2 px-4 py-2 
-                bg-white border border-stone-300 rounded-full 
-                text-xs font-bold text-stone-500 
-                hover:border-sky-500 hover:text-sky-600 
+                rounded-full 
+                text-xs font-bold 
                 hover:shadow-sm
                 transition-all duration-200
                 whitespace-nowrap cursor-pointer
+                ${active 
+                    ? "bg-sky-50 border border-sky-500 text-sky-600 shadow-sm" 
+                    : "bg-white border border-stone-300 text-stone-500 hover:border-sky-500 hover:text-sky-600"
+                }
                 ${className}
             `}
         >
             {/* Si existe el componente Icon, se renderiza */}
-            {Icon && <Icon className="w-3 h-3" />}
+            {Icon && <Icon className={`w-3 h-3 ${active ? "text-sky-600" : ""}`} />}
             
             <span>{children}</span>
             

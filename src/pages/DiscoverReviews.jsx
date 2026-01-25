@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import Search from "../components/Search";
 import Button from "../components/Button";
 import TeacherCard from "../components/TeacherCard";
-import { getTeacherSummary, getLocalTeacherCache } from "../services/teacherService";
+import FilterModal from "../components/common/FilterModal";
+import { getTeacherSummary, getDistinctFilters } from "../services/teacherService";
 import { formatRelativeDate } from "../utils/formatDate";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,6 +20,11 @@ export default function DiscoverReviews() {
     const [totalCount, setTotalCount] = useState(0);
     const PAGE_SIZE = 12;
 
+    // Estados de Filtros
+    const [activeFilter, setActiveFilter] = useState(null); // 'universities', 'subjects', 'teachers'
+    const [filterOptions, setFilterOptions] = useState({ universities: [], subjects: [], teachers: [] });
+    const [selectedFilters, setSelectedFilters] = useState({ universities: [], subjects: [], teachers: [] });
+
     // Debounce search term
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -28,6 +34,17 @@ export default function DiscoverReviews() {
 
         return () => clearTimeout(timer);
     }, [searchTerm]);
+
+    // Cargar opciones de filtros al montar
+    useEffect(() => {
+        const loadFilters = async () => {
+             const options = await getDistinctFilters();
+             setFilterOptions(options);
+        };
+        if (isAuthenticated) {
+            loadFilters();
+        }
+    }, [isAuthenticated]);
 
     useEffect(() => {
         let mounted = true;
@@ -40,7 +57,8 @@ export default function DiscoverReviews() {
                 const { data, count } = await getTeacherSummary({ 
                     page, 
                     pageSize: PAGE_SIZE, 
-                    searchTerm: debouncedSearch 
+                    searchTerm: debouncedSearch,
+                    filters: selectedFilters
                 });
 
                 if (mounted) {
@@ -60,7 +78,31 @@ export default function DiscoverReviews() {
         }
 
         return () => { mounted = false; };
-    }, [authLoading, isAuthenticated, page, debouncedSearch]);
+    }, [authLoading, isAuthenticated, page, debouncedSearch, selectedFilters]);
+
+    const handleApplyFilter = (items) => {
+        setSelectedFilters(prev => ({
+            ...prev,
+            [activeFilter]: items
+        }));
+        setPage(1); // Resetear a pagina 1 al filtrar
+        // El modal se cierra automáticamente por el callback en FilterModal, pero podemos asegurarlo o dejar que FilterModal solo llame onApply
+        // En mi implementación de FilterModal, handleApply hace onApply(selected) y luego onClose().
+    };
+
+    // Helper para obtener el título y opciones del modal activo
+    const getModalProps = () => {
+        switch (activeFilter) {
+            case 'universities':
+                return { title: 'Filtrar por Universidad', options: filterOptions.universities };
+            case 'subjects':
+                return { title: 'Filtrar por Materia', options: filterOptions.subjects };
+            case 'teachers':
+                return { title: 'Filtrar por Profesor', options: filterOptions.teachers };
+            default:
+                return { title: '', options: [] };
+        }
+    };
 
     // Mostrar pantalla de verificación mientras valida sesión
     if (authLoading) {
@@ -73,6 +115,8 @@ export default function DiscoverReviews() {
         );
     }
 
+    const { title: modalTitle, options: modalOptions } = getModalProps();
+
     return (
         <div className="w-full min-h-screen bg-stone-50 pt-16">
             <div className="sticky top-17 z-20 py-8 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm transition-all">
@@ -83,14 +127,23 @@ export default function DiscoverReviews() {
                     />
 
                     <div className="w-full flex flex-wrap justify-start gap-2">
-                        <Button onClick={() => console.log("Filtro Facultad")}>
-                            Universidad
+                        <Button 
+                            active={selectedFilters.universities.length > 0}
+                            onClick={() => setActiveFilter('universities')}
+                        >
+                            Universidad {selectedFilters.universities.length > 0 && `(${selectedFilters.universities.length})`}
                         </Button>
-                        <Button onClick={() => console.log("Filtro Materia")}>
-                            Materia
+                        <Button 
+                            active={selectedFilters.subjects.length > 0}
+                            onClick={() => setActiveFilter('subjects')}
+                        >
+                            Materia {selectedFilters.subjects.length > 0 && `(${selectedFilters.subjects.length})`}
                         </Button>
-                        <Button onClick={() => console.log("Filtro Profesor")}>
-                            Profesor
+                        <Button 
+                            active={selectedFilters.teachers.length > 0}
+                            onClick={() => setActiveFilter('teachers')}
+                        >
+                            Profesor {selectedFilters.teachers.length > 0 && `(${selectedFilters.teachers.length})`}
                         </Button>
                     </div>
                 </div>
@@ -171,6 +224,17 @@ export default function DiscoverReviews() {
                     </div>
                 )}
             </main>
+
+            {/* Modal de Filtros */}
+            <FilterModal
+                isOpen={!!activeFilter}
+                onClose={() => setActiveFilter(null)}
+                title={modalTitle}
+                options={modalOptions}
+                initialSelected={activeFilter ? selectedFilters[activeFilter] : []}
+                onApply={handleApplyFilter}
+            />
+
         </div >
     );
 }

@@ -27,9 +27,40 @@ export const getLocalTeacherCache = () => {
   }
 };
 
-export const getTeacherSummary = async ({ page = 1, pageSize = 12, searchTerm = "" } = {}) => {
+// Obtener filtros únicos para los modales
+// Obtener filtros únicos para los modales
+export const getDistinctFilters = async () => {
     try {
-        console.log(`[teacherService] Fetching page ${page} with search: "${searchTerm}"`);
+        console.log("[teacherService] Fetching distinct filters...");
+
+        // Al haber actualizado la vista teacher_summary con los datos formateados,
+        // podemos obtener todos los filtros directamente de allí.
+        const { data: summaryData, error: summaryError } = await supabase
+            .from('teacher_summary')
+            .select('university, subject_name, full_name');
+
+        if (summaryError) throw summaryError;
+
+        // Procesar datos para obtener listas únicas
+        const universities = [...new Set(summaryData.map(item => item.university).filter(Boolean))].sort();
+        const subjects = [...new Set(summaryData.map(item => item.subject_name).filter(Boolean))].sort();
+        const teachers = [...new Set(summaryData.map(item => item.full_name).filter(Boolean))].sort();
+
+        return {
+            universities,
+            subjects,
+            teachers
+        };
+
+    } catch (error) {
+        console.error("[teacherService] Error fetching filters:", error.message);
+        return { universities: [], subjects: [], teachers: [] };
+    }
+};
+
+export const getTeacherSummary = async ({ page = 1, pageSize = 12, searchTerm = "", filters = {} } = {}) => {
+    try {
+        console.log(`[teacherService] Fetching page ${page} with search: "${searchTerm}"`, filters);
 
         const MAX_ATTEMPTS = 4;
 
@@ -49,6 +80,17 @@ export const getTeacherSummary = async ({ page = 1, pageSize = 12, searchTerm = 
                 // Aplicar búsqueda si existe
                 if (searchTerm) { 
                     query = query.or(`full_name.ilike.%${searchTerm}%,subject_name.ilike.%${searchTerm}%,university.ilike.%${searchTerm}%`);
+                }
+
+                // Aplicar Filtros
+                if (filters.universities && filters.universities.length > 0) {
+                    query = query.in('university', filters.universities);
+                }
+                if (filters.subjects && filters.subjects.length > 0) {
+                    query = query.in('subject_name', filters.subjects);
+                }
+                if (filters.teachers && filters.teachers.length > 0) {
+                    query = query.in('full_name', filters.teachers);
                 }
 
                 // Aplicar paginación
