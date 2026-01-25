@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { MdOutlineClose } from 'react-icons/md';
 import { FaCheck } from "react-icons/fa6";
+import Button from '../Button'; // Reutilizando el componente Button existente si es compatible, o botones estándar
+import Search from '../Search';
 
 export default function FilterModal({ isOpen, onClose, title, options, initialSelected = [], onApply }) {
     const [selected, setSelected] = useState(initialSelected);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    // Reset selected when modal opens with new initialSelected
+    // Resetear seleccionados cuando el modal se abre con nuevos initialSelected
     useEffect(() => {
         if (isOpen) {
             setSelected(initialSelected);
+            setSearchTerm(""); // Reseteamos la búsqueda al abrir el modal
         }
     }, [isOpen, initialSelected]);
 
@@ -27,32 +31,48 @@ export default function FilterModal({ isOpen, onClose, title, options, initialSe
         onClose();
     };
 
+    // Filtramos opciones basadas en lo que el usuario tipeó
+    const filteredOptions = options.filter(option => {
+        const isObject = typeof option === 'object' && option !== null;
+        const label = isObject ? option.label : option;
+        return String(label).toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Overlay */}
+            {/* Superposición */}
             <div 
                 className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             />
 
-            {/* Modal Container */}
-            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-200">
+            {/* Contenedor del Modal */}
+            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col h-[600px] max-h-[90vh] animate-in fade-in zoom-in duration-200">
                 
-                {/* Header */}
+                {/* Cabecera */}
                 <div className="flex items-center justify-between p-6 border-b border-stone-100">
                     <h3 className="text-xl text-stone-700 font-bold">{title}</h3>
                     <button 
                         onClick={onClose}
-                        className="p-1 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors"
+                        className="p-1 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
                     >
                         <MdOutlineClose className="w-6 h-6" />
                     </button>
                 </div>
 
-                {/* Body - Scrollable List */}
-                <div className="p-6 overflow-y-auto">
+                {/* Área de Búsqueda */}
+                <div className="px-6 pt-4">
+                    <Search 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Buscar..."
+                    />
+                </div>
+
+                {/* Cuerpo - Lista Scrolleable */}
+                <div className="p-6 overflow-y-auto flex-1">
                     <div className="flex flex-col gap-3">
-                        {options.map((option, index) => {
+                        {filteredOptions.map((option, index) => {
                             const isObject = typeof option === 'object' && option !== null;
                             const label = isObject ? option.label : option;
                             const value = isObject ? option.value : option;
@@ -75,14 +95,17 @@ export default function FilterModal({ isOpen, onClose, title, options, initialSe
                                 </label>
                             );
                         })}
+                        {filteredOptions.length === 0 && (
+                            <p className="text-stone-400 text-center py-4">No se encontraron resultados.</p>
+                        )}
                         {options.length === 0 && (
                             <p className="text-stone-400 text-center py-4">No hay opciones disponibles.</p>
                         )}
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="p-6 border-t border-stone-100 flex justify-end gap-3 bg-stone-50/50">
+                {/* Pie de página */}
+                <div className="p-6 border-t border-stone-100 flex justify-end gap-3 bg-stone-50/50 mt-auto">
                     <button 
                         onClick={onClose}
                         className="px-5 py-2.5 rounded-xl text-stone-500 font-semibold hover:bg-stone-100 transition-colors cursor-pointer"
