@@ -10,111 +10,57 @@ export default function DiscoverReviews() {
     const { isAuthenticated, loading: authLoading } = useAuth();
     const [professors, setProfessors] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [loading, setLoading] = useState(true);
+    
+    // Estados de la paginación
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+    const PAGE_SIZE = 12;
+
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setPage(1); // Resetear a la página uno en una nueva búsqueda
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     useEffect(() => {
         let mounted = true;
-        let timeoutId;
 
         const fetchProfessors = async () => {
-            // Evitamos cargar datos si no hay usuario autenticado
             if (!isAuthenticated) return;
+            
+            setLoading(true);
+            try {
+                const { data, count } = await getTeacherSummary({ 
+                    page, 
+                    pageSize: PAGE_SIZE, 
+                    searchTerm: debouncedSearch 
+                });
 
-            if (mounted) setLoading(true);
-
-            // Variable para controlar si ya mostramos datos (para evitar "parpadeo" si la red responde justo después del caché)
-            let dataShown = false;
-
-            // RACE STRATEGY:
-            // 1. Iniciamos la petición a RED.
-            const networkPromise = getTeacherSummary()
-                .then(data => ({ source: 'network', data }))
-                .catch(error => ({ source: 'network', error }));
-
-            // 2. Iniciamos un TIMER de fallback (ej: 2.5 segundos).
-            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ source: 'timeout' }), 2500));
-
-            // 3. Esperamos a que gane el primero (o red rápida o el timer).
-            const winner = await Promise.race([networkPromise, timeoutPromise]);
-
-            if (winner.source === 'timeout') {
-                console.warn("[DiscoverReviews] Red lenta. Intentando mostrar caché local mientras la red termina...");
-                const cachedData = getLocalTeacherCache();
-                if (cachedData && mounted && !dataShown) {
-                    setProfessors(cachedData);
-                    setLoading(false); // Quitamos skeleton
-                    dataShown = true;
-                }
-            } else if (winner.source === 'network' && !winner.error) {
-                // Red ganó y fue exitosa
-                console.log("[DiscoverReviews] Red respondió rápido. Mostrando datos frescos.");
                 if (mounted) {
-                    setProfessors(winner.data || []);
-                    setLoading(false);
-                    dataShown = true;
-                    // Ya terminamos, no necesitamos esperar nada más (salvo que quieras asegurar que el otro promise no afecte, pero aquí es lineal)
-                    return;
+                    setProfessors(data);
+                    setTotalCount(count);
+                    setTotalPages(Math.ceil(count / PAGE_SIZE));
                 }
-            }
-
-            // 4. Si ganó el timeout (ya mostramos caché), AÚN debemos esperar a la red para actualizar (o fallar).
-            // O si la red ganó pero falló (error).
-            if (winner.source === 'timeout' || (winner.source === 'network' && winner.error)) {
-                // Si fue timeout, networkPromise sigue corriendo. Esperamos su resultado final.
-                // Si fue error de red inmediato, ya lo tenemos.
-
-                try {
-                    const result = winner.source === 'network' ? winner : await networkPromise;
-
-                    if (result.error) throw result.error;
-
-                    // Si llegó data fresca y es diferente/nueva, actualizamos.
-                    if (mounted) {
-                        console.log("[DiscoverReviews] Datos frescos llegaron (post-timeout). Actualizando vista.");
-                        setProfessors(result.data || []);
-                        setLoading(false);
-                    }
-                } catch (err) {
-                    console.error("Fallo definitivo de red:", err.message);
-                    // Si no habíamos mostrado nada (ni caché), ahora sí no queda otra que mostrar vacío o caché si existe y no se usó
-                    if (mounted && !dataShown) {
-                        const fallbackCache = getLocalTeacherCache();
-                        setProfessors(fallbackCache || []);
-                        setLoading(false);
-                    }
-                }
+            } catch (error) {
+                console.error("[DiscoverReviews] Error loading teachers:", error);
+            } finally {
+                if (mounted) setLoading(false);
             }
         };
 
-        if (!authLoading) {
-            // Solo intentamos cargar si está autenticado
-            if (isAuthenticated) {
-                fetchProfessors();
-            }
-        } else {
-            console.log("[DiscoverReviews] Esperando auth...");
-            timeoutId = setTimeout(() => {
-                // Validación adicional post-timeout
-                if (isAuthenticated) {
-                    console.warn("[DiscoverReviews] Auth timeout - cargando datos");
-                    fetchProfessors();
-                } else {
-                    console.log("[DiscoverReviews] Auth timeout - usuario no autenticado, abortando carga.");
-                }
-            }, 4000);
+        if (!authLoading && isAuthenticated) {
+            fetchProfessors();
         }
 
-        return () => {
-            mounted = false;
-            if (timeoutId) clearTimeout(timeoutId);
-        };
-    }, [authLoading]);
-
-    const filteredProfessors = professors.filter(p =>
-        (p.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (p.subject_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (p.university?.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+        return () => { mounted = false; };
+    }, [authLoading, isAuthenticated, page, debouncedSearch]);
 
     // Mostrar pantalla de verificación mientras valida sesión
     if (authLoading) {
@@ -151,10 +97,15 @@ export default function DiscoverReviews() {
             </div>
 
             <main className="max-w-7xl mx-auto px-4 py-12">
-                <div className="mb-8">
+                <div className="mb-8 flex justify-between items-end">
                     <h2 className="text-2xl font-black text-stone-700 uppercase tracking-tight">
                         Explorar reseñas
                     </h2>
+                    {!loading && (
+                        <span className="text-stone-500 text-sm font-medium">
+                            {totalCount} resultados
+                        </span>
+                    )}
                 </div>
 
                 {loading ? (
@@ -163,38 +114,63 @@ export default function DiscoverReviews() {
                             <TeacherCard key={`skeleton-${i}`} isLoading={true} width="w-full" />
                         ))}
                     </div>
-                ) : filteredProfessors.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-                        {filteredProfessors.map(prof => {
-                            // Asumimos que top_tags viene como array de objetos desde Supabase
-                            const topTags = Array.isArray(prof.top_tags) ? prof.top_tags : [];
+                ) : professors.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center mb-12">
+                            {professors.map(prof => {
+                                // Asumimos que top_tags viene como array de objetos desde Supabase
+                                const topTags = Array.isArray(prof.top_tags) ? prof.top_tags : [];
 
-                            return (
-                                <TeacherCard
-                                    key={prof.teacher_subject_id}
-                                    isLoading={false}
-                                    rating={prof.average_rating || 0}
-                                    positiveComment={prof.latest_positive}
-                                    constructiveComment={prof.latest_constructive}
-                                    qcomment={`${prof.total_reviews} reseñas`}
-                                    teacherName={prof.full_name}
-                                    subjectName={prof.subject_name}
-                                    university={prof.university}
-                                    width="w-full"
-                                    reviewDate={formatRelativeDate(prof.last_review_date)}
-                                    topTags={topTags}
-                                />
-                            );
-                        })}
-                    </div>
+                                return (
+                                    <TeacherCard
+                                        key={prof.teacher_subject_id}
+                                        isLoading={false}
+                                        rating={prof.average_rating || 0}
+                                        positiveComment={prof.latest_positive}
+                                        constructiveComment={prof.latest_constructive}
+                                        qcomment={`${prof.total_reviews} reseñas`}
+                                        teacherName={prof.full_name}
+                                        subjectName={prof.subject_name}
+                                        university={prof.university}
+                                        width="w-full"
+                                        reviewDate={formatRelativeDate(prof.last_review_date)}
+                                        topTags={topTags}
+                                    />
+                                );
+                            })}
+                        </div>
+                        
+                        {/* Controles de Paginación */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-4 py-4">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="px-4 py-2 bg-white border border-stone-200 rounded-lg text-stone-600 font-medium hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                >
+                                    Anterior
+                                </button>
+                                <span className="text-stone-600 font-medium">
+                                    Página {page} de {totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={page === totalPages}
+                                    className="px-4 py-2 bg-white border border-stone-200 rounded-lg text-stone-600 font-medium hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                >
+                                    Siguiente
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
-                    < div >
+                    <div>
                         <p className="text-stone-400 font-medium text-lg">
                             No encontramos resultados para tu búsqueda.
                         </p>
                     </div>
                 )}
-            </main >
+            </main>
         </div >
     );
 }
