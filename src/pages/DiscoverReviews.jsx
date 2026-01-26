@@ -8,7 +8,7 @@ import { formatRelativeDate } from "../utils/formatDate";
 import { useAuth } from "../context/AuthContext";
 
 export default function DiscoverReviews() {
-    const { isAuthenticated, loading: authLoading } = useAuth();
+    const { isAuthenticated, sessionReady, loading: authLoading } = useAuth();
     const [professors, setProfessors] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -35,16 +35,17 @@ export default function DiscoverReviews() {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    // Cargar opciones de filtros al montar
+    // Cargar opciones de filtros cuando la sesión esté lista:
     useEffect(() => {
         const loadFilters = async () => {
              const options = await getDistinctFilters();
              setFilterOptions(options);
         };
-        if (isAuthenticated) {
+        // Esperar a que sessionReady sea true para evitar queries durante token refresh:
+        if (sessionReady && isAuthenticated) {
             loadFilters();
         }
-    }, [isAuthenticated]);
+    }, [sessionReady, isAuthenticated]);
 
     useEffect(() => {
         let mounted = true;
@@ -73,12 +74,13 @@ export default function DiscoverReviews() {
             }
         };
 
-        if (!authLoading && isAuthenticated) {
+        // Esperar a que sessionReady sea true para evitar queries durante token refresh:
+        if (sessionReady && isAuthenticated) {
             fetchProfessors();
         }
 
         return () => { mounted = false; };
-    }, [authLoading, isAuthenticated, page, debouncedSearch, selectedFilters]);
+    }, [sessionReady, isAuthenticated, page, debouncedSearch, selectedFilters]);
 
     const handleApplyFilter = (items) => {
         setSelectedFilters(prev => ({

@@ -6,7 +6,6 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
     // Estados de usuario y sesión con hidratación:
     const [user, setUser] = useState(() => {
-        // Intentar recuperar usuario del localStorage al iniciar:
         try {
             const savedUser = localStorage.getItem("app_user");
             return savedUser ? JSON.parse(savedUser) : null;
@@ -17,25 +16,29 @@ export const AuthProvider = ({ children }) => {
     });
 
     const [loading, setLoading] = useState(() => {
-        // Si hay un user hidratado, no mostrar loading:
         try {
             const savedUser = localStorage.getItem("app_user");
             if (savedUser) {
                 const parsed = JSON.parse(savedUser);
-                return !parsed.nickname;
+                return !parsed.nickname; // Si tiene nickname, no loading
             }
+            return true;
         } catch (error) {
-            console.error("[AuthContext] Error leyendo localStorage:", error);
-            return true; // Por defecto, loading=true
+            return true;
         }
     });
-    const sessionRestoredRef = useRef(false);
 
-    // Estados de control para el modal:
+    // Indica si la sesión está lista para queries a Supabase:
+    const [sessionReady, setSessionReady] = useState(false);
+
+    // Ref para evitar procesar eventos duplicados:
+    const eventProcessedRef = useRef(false);
+
+    // Estados del modal:
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState("login");
 
-    // Función helper para actualizar usuario con persistencia:
+    // Helper para persistir usuario:
     const updateUser = (newUser) => {
         setUser(newUser);
         if (newUser) {
@@ -49,109 +52,129 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Función para recuperar datos desde Supabase respecto al user:
+    // Verificar si el cache tiene perfil completo:
+    const hasCompleteProfile = (u) => u && u.nickname != null;
+
+    // Fetch del perfil de usuario (con reintentos):
     const fetchUserProfile = async (userId, attempt = 1) => {
-        const MAX_ATTEMPTS = 4;
-        const timeout = 5000 + (attempt * 1000); 
+        const MAX_ATTEMPTS = 3;
+        const timeout = 8000;
 
         try {
-            // Nota: no llamar getSession() aquí - causa deadlock cuando se invoca desde onAuthStateChange:
             console.log(`[AuthContext < fetchUserProfile] Intento ${attempt}/${MAX_ATTEMPTS}`);
 
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout fetchUserProfile')), timeout)
-            );
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-            const queryPromise = supabase
+            const { data, error } = await supabase
                 .from('Users')
                 .select('nickname, role, status')
                 .eq('id', userId)
-                .single();
+                .single()
+                .abortSignal(controller.signal);
 
-            const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+            clearTimeout(timeoutId);
 
-            // Si hay error de conexión o RLS (data null cuando debería haber dato):
             if (error) throw error;
-            if (!data) throw new Error("Datos vacíos (Posible bloqueo RLS)");
+            if (!data) throw new Error("Datos vacíos");
 
-            console.log(`[fetchUserProfile] Éxito en intento ${attempt}:`, data);
+            console.log(`[fetchUserProfile] Éxito:`, data);
             return data;
 
         } catch (error) {
             console.warn(`[fetchUserProfile] Intento ${attempt} falló:`, error.message);
 
             if (attempt < MAX_ATTEMPTS) {
-                // Intento 1: espera 200ms (suficiente para token refresh):
-                // Intento 2: espera 500ms:
-                // Intento 3: espera 1000ms:
-                const backoffTime = attempt === 1 ? 200 : (500 * attempt);
-                
-                await new Promise(resolve => setTimeout(resolve, backoffTime));
+                await new Promise(r => setTimeout(r, 1000 * attempt));
                 return fetchUserProfile(userId, attempt + 1);
             }
-            console.error("[fetchUserProfile] Todos los intentos fallaron");
             return null;
         }
     };
 
-    // Efecto de autenticación (lifecycle):
+    // Efecto principal de autenticación:
     useEffect(() => {
         let mounted = true;
+        const cachedUser = user;
 
-        // Siempre suscribirse - Supabase maneja la detección de sesión automáticamente:
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 if (!mounted) return;
-                console.log("[AuthContext] Auth event:", event);
+                console.log("[AuthContext] Auth event:", event, "session:", !!session);
 
-                sessionRestoredRef.current = true;
-
-                const userId = session?.user?.id;
-
-                if (session && userId) {
-                    // Intentar cargar perfil completo:
-                    const profile = await fetchUserProfile(userId);
-
-                    if (profile) {
-                        // Caso ideal: perfil cargado:
-                        console.log("[AuthContext] Usuario con perfil:", profile);
-                        updateUser({ ...session.user, ...profile });
-                    } else {
-                        // Fallback: preservar datos del cache si existen:
-                        const cachedUser = localStorage.getItem('app_user');
-
-                        if (cachedUser) {
-                            console.warn("[AuthContext] Usando user del cache - perfil no disponible");
-                            // No llamar updateUser - mantener el estado hidratado:
-
-                            setLoading(false);
-                            return;
-                        } else {
-                            // Solo si no hay cache, crear user mínimo:
-                            console.warn("[AuthContext] Sin cache - creando user básico");
-                            updateUser({
-                                id: userId,
-                                email: session.user.email,
-                                nickname: null,
-                                role: 'user',
-                                status: 'active'
-                            });
-                        }
-                    }
-                } else {
-                    // Sin sesión válida - limpiar todo (incluye INITIAL_SESSION sin sesión y SIGNED_OUT):
-                    console.log("[AuthContext] Sin sesión activa - limpiando estado");
+                // SIGNED_OUT: Limpiar todo
+                if (event === 'SIGNED_OUT') {
+                    console.log("[AuthContext] Cerrando sesión");
                     updateUser(null);
+                    setSessionReady(false);
+                    eventProcessedRef.current = false;
+                    setLoading(false);
+                    return;
                 }
 
-                setLoading(false);
+                // INITIAL_SESSION o SIGNED_IN con sesión válida:
+                if (session?.user?.id) {
+                    const userId = session.user.id;
+
+                    // Caso F5 con cache válido: usar cache inmediatamente, no fetch
+                    if (event === 'INITIAL_SESSION' && hasCompleteProfile(cachedUser)) {
+                        console.log("[AuthContext] F5 con cache válido - sin fetch");
+                        setSessionReady(true);
+                        setLoading(false);
+                        eventProcessedRef.current = true;
+                        return;
+                    }
+
+                    // Evitar procesamiento duplicado:
+                    if (eventProcessedRef.current && event === 'SIGNED_IN') {
+                        console.log("[AuthContext] SIGNED_IN duplicado - ignorando");
+                        return;
+                    }
+
+                    // Login fresco o F5 sin cache: set user básico inmediatamente
+                    if (!eventProcessedRef.current) {
+                        console.log("[AuthContext] Procesando sesión - set user básico");
+                        eventProcessedRef.current = true;
+                        
+                        // Set user inmediatamente con datos de sesión (sin esperar fetch):
+                        const basicUser = {
+                            id: userId,
+                            email: session.user.email,
+                            nickname: cachedUser?.nickname || null,
+                            role: cachedUser?.role || 'user',
+                            status: cachedUser?.status || 'active'
+                        };
+                        updateUser(basicUser);
+                        setSessionReady(true);
+                        setLoading(false);
+
+                        // Fetch perfil en background (no bloquea UI):
+                        setTimeout(async () => {
+                            if (!mounted) return;
+                            const profile = await fetchUserProfile(userId);
+                            if (profile && mounted) {
+                                updateUser({ ...session.user, ...profile });
+                                console.log("[AuthContext] Perfil actualizado en background");
+                            }
+                        }, 100);
+                    }
+                    return;
+                }
+
+                // Sin sesión y sin cache: estado limpio
+                if (!session && !cachedUser) {
+                    console.log("[AuthContext] Sin sesión ni cache");
+                    setSessionReady(true);
+                    setLoading(false);
+                }
             }
         );
 
-        // Timeout de seguridad (5s) - Da tiempo a que Supabase restaure la sesión:
+        // Timeout de seguridad:
         const timeoutId = setTimeout(() => {
-            if (mounted && !sessionRestoredRef.current) {
-                console.warn("[AuthContext] Timeout - forzando el modo invitado");
+            if (mounted && !eventProcessedRef.current) {
+                console.warn("[AuthContext] Timeout - forzando ready");
+                setSessionReady(true);
                 setLoading(false);
             }
         }, 5000);
@@ -170,23 +193,22 @@ export const AuthProvider = ({ children }) => {
             updateUser(null);
             setIsModalOpen(false);
         } catch (error) {
-            console.error("Error al cerrar sesión: ", error.message);
+            console.error("Error al cerrar sesión:", error.message);
         }
     };
 
-    // Acciones de interfaz (modal):
+    // Acciones del modal:
     const openLogin = () => { setModalMode("login"); setIsModalOpen(true); };
     const openRegister = () => { setModalMode("register"); setIsModalOpen(true); };
     const closeModal = () => setIsModalOpen(false);
 
-    // Log de estado para debugging:
-    console.log("[AuthContext] Renderizando - user:", user, "loading:", loading);
+    console.log("[AuthContext] Render - user:", !!user, "loading:", loading, "sessionReady:", sessionReady);
 
-    // Renderizado del proveedor:
     return (
         <AuthContext.Provider value={{
             user,
             loading,
+            sessionReady,
             isAuthenticated: !!user,
             isModalOpen,
             modalMode,
