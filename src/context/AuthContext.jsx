@@ -4,9 +4,9 @@ import { supabase } from "../supabaseClient";
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
-    // --- ESTADOS DE USUARIO Y SESIÓN CON HIDRATACIÓN ---
+    // Estados de usuario y sesión con hidratación:
     const [user, setUser] = useState(() => {
-        // Intentar recuperar usuario del localStorage al iniciar
+        // Intentar recuperar usuario del localStorage al iniciar:
         try {
             const savedUser = localStorage.getItem("app_user");
             return savedUser ? JSON.parse(savedUser) : null;
@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     const [loading, setLoading] = useState(() => {
-        // Si hay un user hidratado, no mostrar loading
+        // Si hay un user hidratado, no mostrar loading:
         try {
             const savedUser = localStorage.getItem("app_user");
             if (savedUser) {
@@ -31,11 +31,11 @@ export const AuthProvider = ({ children }) => {
     });
     const sessionRestoredRef = useRef(false);
 
-    // --- ESTADOS DE CONTROL DE MODAL (UI) ---
+    // Estados de control para el modal:
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState("login");
 
-    // --- FUNCIÓN HELPER PARA ACTUALIZAR USUARIO CON PERSISTENCIA ---
+    // Función helper para actualizar usuario con persistencia:
     const updateUser = (newUser) => {
         setUser(newUser);
         if (newUser) {
@@ -49,38 +49,43 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // --- LÓGICA DE RECUPERACIÓN DE DATOS ---
+    // Función para recuperar datos desde Supabase respecto al user:
     const fetchUserProfile = async (userId, attempt = 1) => {
-        const MAX_ATTEMPTS = 3;
-        const timeout = 10000 + (attempt * 2000); // 3s + 2s por intento
+        const MAX_ATTEMPTS = 4;
+        const timeout = 5000 + (attempt * 1000); 
 
         try {
-            console.log(`[fetchUserProfile] Intento ${attempt}/${MAX_ATTEMPTS} - Timeout: ${timeout}ms`);
+            // Nota: no llamar getSession() aquí - causa deadlock cuando se invoca desde onAuthStateChange:
+            console.log(`[AuthContext < fetchUserProfile] Intento ${attempt}/${MAX_ATTEMPTS}`);
 
-            // Timeout de 5 segundos para la query
             const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Timeout fetchUserProfile')), timeout)
             );
 
             const queryPromise = supabase
-                .from("Users")
-                .select("nickname, role, status")
-                .eq("id", userId)
+                .from('Users')
+                .select('nickname, role, status')
+                .eq('id', userId)
                 .single();
 
             const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
+            // Si hay error de conexión o RLS (data null cuando debería haber dato):
             if (error) throw error;
+            if (!data) throw new Error("Datos vacíos (Posible bloqueo RLS)");
 
             console.log(`[fetchUserProfile] Éxito en intento ${attempt}:`, data);
             return data;
+
         } catch (error) {
             console.warn(`[fetchUserProfile] Intento ${attempt} falló:`, error.message);
 
             if (attempt < MAX_ATTEMPTS) {
-                // Esperar antes de reintentar (1s, 2s)
-                const backoffTime = 1000 * attempt;
-                console.log(`[fechtUserProfile] Esperando ${backoffTime}ms antes de reintentar...`);
+                // Intento 1: espera 200ms (suficiente para token refresh):
+                // Intento 2: espera 500ms:
+                // Intento 3: espera 1000ms:
+                const backoffTime = attempt === 1 ? 200 : (500 * attempt);
+                
                 await new Promise(resolve => setTimeout(resolve, backoffTime));
                 return fetchUserProfile(userId, attempt + 1);
             }
@@ -89,11 +94,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // --- EFECTO DE AUTENTICACIÓN (LIFECYCLE) ---
+    // Efecto de autenticación (lifecycle):
     useEffect(() => {
         let mounted = true;
 
-        // SIEMPRE suscribirse - Supabase maneja la detección de sesión automáticamente
+        // Siempre suscribirse - Supabase maneja la detección de sesión automáticamente:
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 if (!mounted) return;
@@ -101,51 +106,49 @@ export const AuthProvider = ({ children }) => {
 
                 sessionRestoredRef.current = true;
 
-                if (session) {
-                    // Intentar cargar perfil completo
-                    const profile = await fetchUserProfile(session.user.id);
+                const userId = session?.user?.id;
+
+                if (session && userId) {
+                    // Intentar cargar perfil completo:
+                    const profile = await fetchUserProfile(userId);
 
                     if (profile) {
-                        // Caso ideal: perfil cargado
+                        // Caso ideal: perfil cargado:
                         console.log("[AuthContext] Usuario con perfil:", profile);
                         updateUser({ ...session.user, ...profile });
                     } else {
-                        // Fallback: preservar datos del cache si existen
-                        const cachedUser = localStorage.getItem("app_user");
+                        // Fallback: preservar datos del cache si existen:
+                        const cachedUser = localStorage.getItem('app_user');
 
                         if (cachedUser) {
-                            const parsed = JSON.parse(cachedUser);
                             console.warn("[AuthContext] Usando user del cache - perfil no disponible");
-                            // NO llamar updateUser - mantener el estado hidratado
+                            // No llamar updateUser - mantener el estado hidratado:
 
                             setLoading(false);
                             return;
                         } else {
-                            // Solo si NO hay cache, crear user mínimo
+                            // Solo si no hay cache, crear user mínimo:
                             console.warn("[AuthContext] Sin cache - creando user básico");
                             updateUser({
-                                id: session.user.id,
+                                id: userId,
                                 email: session.user.email,
                                 nickname: null,
-                                role: "user",
-                                status: "active"
+                                role: 'user',
+                                status: 'active'
                             });
                         }
                     }
                 } else {
-                    // Sin sesión - limpiar todo
+                    // Sin sesión válida - limpiar todo (incluye INITIAL_SESSION sin sesión y SIGNED_OUT):
+                    console.log("[AuthContext] Sin sesión activa - limpiando estado");
                     updateUser(null);
-
-                    // Limpiamos caché de profesores
-                    localStorage.removeItem("TEACHER_DATA_CACHE");
-                    console.log("[AuthContext] Sesión expirada - caché borrada.");
                 }
 
                 setLoading(false);
             }
         );
 
-        // Timeout de seguridad (5s) - Da tiempo a que Supabase restaure la sesión
+        // Timeout de seguridad (5s) - Da tiempo a que Supabase restaure la sesión:
         const timeoutId = setTimeout(() => {
             if (mounted && !sessionRestoredRef.current) {
                 console.warn("[AuthContext] Timeout - forzando el modo invitado");
@@ -160,7 +163,7 @@ export const AuthProvider = ({ children }) => {
         };
     }, []);
 
-    // --- ACCIONES DE AUTENTICACIÓN ---
+    // Función de deslogueo:
     const signOut = async () => {
         try {
             await supabase.auth.signOut();
@@ -171,15 +174,15 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // --- ACCIONES DE INTERFAZ (MODAL) ---
+    // Acciones de interfaz (modal):
     const openLogin = () => { setModalMode("login"); setIsModalOpen(true); };
     const openRegister = () => { setModalMode("register"); setIsModalOpen(true); };
     const closeModal = () => setIsModalOpen(false);
 
-    // Log de estado para debugging
+    // Log de estado para debugging:
     console.log("[AuthContext] Renderizando - user:", user, "loading:", loading);
 
-    // --- RENDERIZADO DEL PROVEEDOR ---
+    // Renderizado del proveedor:
     return (
         <AuthContext.Provider value={{
             user,
