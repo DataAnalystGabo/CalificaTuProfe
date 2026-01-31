@@ -6,6 +6,7 @@ import MainLayout from "./components/MainLayout";
 // --- PAGINAS ---
 import LandingPage from "./pages/LandingPage";
 import DiscoverReviews from "./pages/DiscoverReviews";
+import TeacherReviewsPage from "./pages/TeacherReviewsPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -21,6 +22,7 @@ function App() {
                     <Route element={<MainLayout />}>
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/explorar" element={<DiscoverReviews />} />
+                        <Route path="/reviews/:id" element={<TeacherReviewsPage />} />
                         <Route path="*" element={<NotFound />} />
                     </Route>
                 </Routes>

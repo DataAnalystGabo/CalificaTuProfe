@@ -124,3 +124,67 @@ export const getTeacherSummary = async ({ page = 1, pageSize = 12, searchTerm = 
         throw err;
     }
 };
+
+// Obtener información de cabecera del profesor para la página de detalle:
+export const getTeacherHeaderInfo = async (teacherSubjectId) => {
+    try {
+        console.log(`[teacherService > getTeacherHeaderInfo] Fetching header para: ${teacherSubjectId}`);
+
+        const { data, error } = await supabase
+            .from('teacher_summary')
+            .select('teacher_subject_id, full_name, university, subject_name, average_rating, total_reviews')
+            .eq('teacher_subject_id', teacherSubjectId)
+            .single();
+
+        if (error) throw error;
+
+        return data;
+
+    } catch (error) {
+        console.error("[teacherService > getTeacherHeaderInfo] Error:", error.message);
+        throw error;
+    }
+};
+
+// Obtener todas las reseñas de un profesor/materia con sus tags:
+export const getTeacherReviews = async (teacherSubjectId) => {
+    try {
+        console.log(`[teacherService > getTeacherReviews] Fetching reviews para: ${teacherSubjectId}`);
+
+        const { data, error } = await supabase
+            .from('Reviews')
+            .select(`
+                id,
+                teacher_subject_id,
+                rating,
+                positive_comment,
+                constructive_comment,
+                created_at,
+                user_id,
+                Reviews_Tags (
+                    Tags (
+                        id,
+                        name
+                    )
+                )
+            `)
+            .eq('teacher_subject_id', teacherSubjectId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Mapear para simplificar estructura de tags
+        const mappedData = (data || []).map(review => ({
+            ...review,
+            tags: review.Reviews_Tags
+                ?.map(rt => rt.Tags)
+                .filter(Boolean) || []
+        }));
+
+        return mappedData;
+
+    } catch (error) {
+        console.error("[teacherService > getTeacherReviews] Error:", error.message);
+        throw error;
+    }
+};

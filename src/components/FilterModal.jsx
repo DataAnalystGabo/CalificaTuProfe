@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MdOutlineClose } from 'react-icons/md';
 import { FaCheck } from "react-icons/fa6";
-import Button from '../Button'; // Reutilizando el componente Button existente si es compatible, o botones estándar
-import Search from '../Search';
+import Button from './Button'; // Reutilizando el componente Button existente si es compatible, o botones estándar
+import Search from './Search';
 
 export default function FilterModal({ isOpen, onClose, title, options, initialSelected = [], onApply }) {
     const [selected, setSelected] = useState(initialSelected);

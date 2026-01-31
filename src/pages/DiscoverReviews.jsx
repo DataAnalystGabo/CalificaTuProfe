@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Search from "../components/Search";
 import Button from "../components/Button";
 import TeacherCard from "../components/TeacherCard";
-import FilterModal from "../components/common/FilterModal";
+import FilterModal from "../components/FilterModal";
 import { getTeacherSummary, getDistinctFilters } from "../services/teacherService";
 import { formatRelativeDate } from "../utils/formatDate";
 import { useAuth } from "../context/AuthContext";
@@ -247,6 +247,7 @@ export default function DiscoverReviews() {
                                 return (
                                     <TeacherCard
                                         key={prof.teacher_subject_id}
+                                        teacherSubjectId={prof.teacher_subject_id}
                                         isLoading={false}
                                         rating={prof.average_rating || 0}
                                         positiveComment={prof.latest_positive}

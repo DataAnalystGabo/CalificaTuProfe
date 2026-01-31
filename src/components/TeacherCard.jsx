@@ -86,6 +86,7 @@ function TeacherCardSkeleton({ width = "w-72", shadow = true }) {
 
 export default function TeacherCard({
     isLoading = false,
+    teacherSubjectId,
     rating,
     positiveComment,
     constructiveComment,
@@ -109,8 +110,10 @@ export default function TeacherCard({
 
     // Función para manejar el botón de "Leer reseñas" de forma dinámica
     const handleAction = (e) => {
-        e.preventDefault(); // evitamos cualquier comportamiento por defecto
-        navigate("/readReviews");
+        e.preventDefault();
+        if (teacherSubjectId) {
+            navigate(`/reviews/${teacherSubjectId}`);
+        }
     };
 
     return (
@@ -148,7 +151,7 @@ export default function TeacherCard({
                             <span>{subjectName}</span>
                         </div>
 
-                        {/* Categoría: materia */}
+                        {/* Categoría: antidad de comentarios */}
                         <div className="flex items-center text-sm text-stone-500">
                             <FaCommentDots className="h-3 w-3 mr-1" />
                             <span>{qcomment}</span>
@@ -162,7 +165,7 @@ export default function TeacherCard({
             <div className="flex flex-col justify-start items-start gap-4 mt-4">
 
                 <div className="w-auto flex flex-row px-3 py-0.5 gap-2 items-center justify-center bg-stone-50 rounded-2xl  border border-stone-400">
-                    <span className="font-bold text-stone-500">
+                    <span className="font-bold text-stone-600">
                         {/* Number y toFixed asegura que los numeros enteros se muestren con el decimal .0. Ejemplo: 4.0 */}
                         {Number(rating).toFixed(1)}
                     </span>
