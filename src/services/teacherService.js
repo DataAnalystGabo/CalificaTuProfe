@@ -162,7 +162,8 @@ export const getTeacherReviews = async (teacherSubjectId) => {
                 created_at,
                 user_id,
                 Reviews_Tags (
-                    Tags (
+                    tag_id,
+                    Tags:tag_id (
                         id,
                         name
                     )
