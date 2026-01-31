@@ -25,8 +25,23 @@ export default function Button({
     icon: Icon,
     hasChevron = true, 
     className = "",
-    active = false
+    active = false,
+    variant = "default" // 'default' | 'danger'
 }) {
+    // Estilos base según variante
+    const variantStyles = {
+        default: {
+            base: "bg-white border border-stone-300 text-stone-500 hover:border-sky-500 hover:text-sky-600",
+            active: "bg-sky-50 border border-sky-500 text-sky-600 shadow-sm"
+        },
+        danger: {
+            base: "bg-white border border-red-200 text-red-500 hover:border-red-400 hover:bg-red-50",
+            active: "bg-red-50 border border-red-500 text-red-600 shadow-sm"
+        }
+    };
+
+    const styles = variantStyles[variant] || variantStyles.default;
+
     return (
         <button
             onClick={onClick}
@@ -34,18 +49,14 @@ export default function Button({
                 flex items-center gap-2 px-4 py-2 
                 rounded-full 
                 text-xs font-bold 
-                hover:shadow-sm
                 transition-all duration-200
                 whitespace-nowrap cursor-pointer
-                ${active 
-                    ? "bg-sky-50 border border-sky-500 text-sky-600 shadow-sm" 
-                    : "bg-white border border-stone-300 text-stone-500 hover:border-sky-500 hover:text-sky-600"
-                }
+                ${active ? styles.active : styles.base}
                 ${className}
             `}
         >
             {/* Si existe el componente Icon, se renderiza */}
-            {Icon && <Icon className={`w-3 h-3 ${active ? "text-sky-600" : ""}`} />}
+            {Icon && <Icon className={`w-3 h-3 ${active ? (variant === 'danger' ? "text-red-600" : "text-sky-600") : ""}`} />}
             
             <span>{children}</span>
             

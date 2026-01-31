@@ -6,6 +6,7 @@ import FilterModal from "../components/common/FilterModal";
 import { getTeacherSummary, getDistinctFilters } from "../services/teacherService";
 import { formatRelativeDate } from "../utils/formatDate";
 import { useAuth } from "../context/AuthContext";
+import { MdOutlineFilterAltOff } from "react-icons/md";
 
 export default function DiscoverReviews() {
     const { isAuthenticated, sessionReady, loading: authLoading } = useAuth();
@@ -151,6 +152,18 @@ export default function DiscoverReviews() {
                         >
                             Profesor {selectedFilters.teachers.length > 0 && `(${selectedFilters.teachers.length})`}
                         </Button>
+
+                        {/* Botón Eliminar Filtros - solo visible si hay filtros activos */}
+                        {(selectedFilters.universities.length > 0 || selectedFilters.subjects.length > 0 || selectedFilters.teachers.length > 0) && (
+                            <Button
+                                variant="danger"
+                                icon={MdOutlineFilterAltOff}
+                                hasChevron={false}
+                                onClick={() => setSelectedFilters({ universities: [], subjects: [], teachers: [] })}
+                            >
+                                Eliminar filtros
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
