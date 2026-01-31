@@ -93,8 +93,59 @@ export default function DiscoverReviews() {
             [activeFilter]: items
         }));
         setPage(1); // Resetear a pagina 1 al filtrar
-        // El modal se cierra automáticamente por el callback en FilterModal, pero podemos asegurarlo o dejar que FilterModal solo llame onApply
-        // En mi implementación de FilterModal, handleApply hace onApply(selected) y luego onClose().
+    };
+
+    // Helper para mapear UUIDs a labels legibles
+    const getFilterLabels = (filterKey) => {
+        const ids = selectedFilters[filterKey];
+        const options = filterOptions[filterKey];
+        if (!ids?.length || !options?.length) return [];
+        
+        return ids
+            .map(id => options.find(opt => opt.id === id)?.label)
+            .filter(Boolean);
+    };
+
+    // Función para limpiar búsqueda y filtros
+    const handleClearAll = () => {
+        setSearchTerm("");
+        setSelectedFilters({ universities: [], subjects: [], teachers: [] });
+        setPage(1);
+    };
+
+    // Verificar si hay criterios activos
+    const hasActiveFilters = selectedFilters.universities.length > 0 || 
+                             selectedFilters.subjects.length > 0 || 
+                             selectedFilters.teachers.length > 0;
+    const hasSearchTerm = debouncedSearch.trim().length > 0;
+    const hasAnyCriteria = hasActiveFilters || hasSearchTerm;
+
+    // Construir mensaje dinámico para empty state
+    const buildEmptyStateMessage = () => {
+        const universityLabels = getFilterLabels('universities');
+        const subjectLabels = getFilterLabels('subjects');
+        const teacherLabels = getFilterLabels('teachers');
+        
+        const allFilterLabels = [...universityLabels, ...subjectLabels, ...teacherLabels];
+        const filtersText = allFilterLabels.join(' + ');
+
+        // Caso A: Solo búsqueda de texto
+        if (hasSearchTerm && !hasActiveFilters) {
+            return `No encontramos reseñas que coincidan con "${debouncedSearch}".`;
+        }
+
+        // Caso B: Solo filtros
+        if (hasActiveFilters && !hasSearchTerm) {
+            return `No encontramos reseñas para la combinación: ${filtersText}.`;
+        }
+
+        // Caso C: Texto + Filtros
+        if (hasSearchTerm && hasActiveFilters) {
+            return `No encontramos reseñas para "${debouncedSearch}" con los filtros: ${filtersText}.`;
+        }
+
+        // Default: sin criterios activos
+        return "No encontramos reseñas disponibles.";
     };
 
     // Helper para obtener el título y opciones del modal activo
@@ -236,10 +287,18 @@ export default function DiscoverReviews() {
                         )}
                     </>
                 ) : (
-                    <div>
-                        <p className="text-stone-400 font-medium text-lg">
-                            No encontramos resultados para tu búsqueda.
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <p className="text-stone-400 font-normal text-lg max-w">
+                            {buildEmptyStateMessage()}
                         </p>
+                        {hasAnyCriteria && (
+                            <button
+                                onClick={handleClearAll}
+                                className="mt-6 text-sky-500 font-semibold hover:text-sky-600 underline underline-offset-2 transition-colors cursor-pointer"
+                            >
+                                Limpiar búsqueda y filtros
+                            </button>
+                        )}
                     </div>
                 )}
             </main>

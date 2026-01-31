@@ -48,7 +48,7 @@ export default function Button({
             className={`
                 flex items-center gap-2 px-4 py-2 
                 rounded-full 
-                text-xs font-bold 
+                text-xs font-medium 
                 transition-all duration-200
                 whitespace-nowrap cursor-pointer
                 ${active ? styles.active : styles.base}
