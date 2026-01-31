@@ -3,35 +3,36 @@ import { supabase } from '../supabaseClient';
 // Obtener filtros únicos para los modales:
 export const getDistinctFilters = async () => {
     try {
-        console.log("[teacherService / getDistinctFilters] Consultando tablas maestro...");
+        console.log("[teacherService > getDistinctFilters] Consultando tablas maestro a Supabase...");
 
-        // Consultas paralelas a las tablas maestro:
+        // Consultas paralelas a las tablas maestro (incluyendo ID para filtrado por UUID):
         const [teachersRes, subjectsRes, universitiesRes] = await Promise.all([
-            supabase.from('Teachers').select('first_name, last_name'),
-            supabase.from('Subjects').select('name'),
-            supabase.from('Universities').select('name, acronym')
+            supabase.from('Teachers').select('id, first_name, last_name'),
+            supabase.from('Subjects').select('id, name'),
+            supabase.from('Universities').select('id, name, acronym')
         ]);
 
         if (teachersRes.error) throw teachersRes.error;
         if (subjectsRes.error) throw subjectsRes.error;
         if (universitiesRes.error) throw universitiesRes.error;
 
-        // Procesar datos:
+        // Mapeo a objetos { id, label } para cada categoría:
         const teachers = teachersRes.data
-            .map(t => `${t.first_name} ${t.last_name}`)
-            .sort();
+            .map(t => ({ id: t.id, label: `${t.first_name} ${t.last_name}` }))
+            .sort((a, b) => a.label.localeCompare(b.label));
         
-        const subjects = subjectsRes.data.map(s => s.name).sort();
+        const subjects = subjectsRes.data
+            .map(s => ({ id: s.id, label: s.name }))
+            .sort((a, b) => a.label.localeCompare(b.label));
         
-        // Formatear universidades como "Nombre (ACRONIMO)":
         const universities = universitiesRes.data
-            .map(u => `${u.name} (${u.acronym})`)
-            .sort();
+            .map(u => ({ id: u.id, label: `${u.name} (${u.acronym})` }))
+            .sort((a, b) => a.label.localeCompare(b.label));
 
         return { universities, subjects, teachers };
 
     } catch (error) {
-        console.error("[teacherService / getDistinctFilters] Error:", error.message);
+        console.error("[teacherService > getDistinctFilters] Error:", error.message);
         return { universities: [], subjects: [], teachers: [] };
     }
 };
@@ -43,13 +44,13 @@ export const getTeacherSummary = async ({ page = 1, pageSize = 12, searchTerm = 
         const MAX_ATTEMPTS = 4;
 
         const fetchWithRetry = async (attempt = 1) => {
-            // Tiempos de timeout incrementales: 10s, 15s, 20s, 25s
-            const timeoutDuration = 20000 + (attempt * 20000);
+            // Tiempos de timeout ágiles: 5s base + 3s por cada intento adicional
+            const timeoutDuration = 5000 + ((attempt - 1) * 3000);
 
             // Creamos el controlador de cancelación
             const controller = new AbortController();
 
-            // Programamos el "corede de llamada" automático si se pasa del tiempo
+            // Programamos el "core de llamada" automático si se pasa del tiempo
             const timeoutId = setTimeout(() => {
                 controller.abort(); // Esto cancela la petición de red real
             }, timeoutDuration);
@@ -68,15 +69,15 @@ export const getTeacherSummary = async ({ page = 1, pageSize = 12, searchTerm = 
                     query = query.or(`full_name.ilike.%${searchTerm}%,subject_name.ilike.%${searchTerm}%,university.ilike.%${searchTerm}%`);
                 }
 
-                // Aplicar Filtros
-                if (filters.universities?.length > 0) {
-                    query = query.in('university', filters.universities);
+                // Aplicar Filtros por ID (UUID)
+                if (filters.university_ids?.length > 0) {
+                    query = query.in('university_id', filters.university_ids);
                 }
-                if (filters.subjects?.length > 0) {
-                    query = query.in('subject_name', filters.subjects);
+                if (filters.subject_ids?.length > 0) {
+                    query = query.in('subject_id', filters.subject_ids);
                 }
-                if (filters.teachers?.length > 0) {
-                    query = query.in('full_name', filters.teachers);
+                if (filters.teacher_ids?.length > 0) {
+                    query = query.in('teacher_id', filters.teacher_ids);
                 }
 
                 // Aplicar paginación

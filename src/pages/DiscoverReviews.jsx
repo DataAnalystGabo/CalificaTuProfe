@@ -59,7 +59,11 @@ export default function DiscoverReviews() {
                     page, 
                     pageSize: PAGE_SIZE, 
                     searchTerm: debouncedSearch,
-                    filters: selectedFilters
+                    filters: {
+                        university_ids: selectedFilters.universities,
+                        subject_ids: selectedFilters.subjects,
+                        teacher_ids: selectedFilters.teachers
+                    }
                 });
 
                 if (mounted) {

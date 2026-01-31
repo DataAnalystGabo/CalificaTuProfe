@@ -18,11 +18,11 @@ export default function FilterModal({ isOpen, onClose, title, options, initialSe
 
     if (!isOpen) return null;
 
-    const toggleOption = (option) => {
-        if (selected.includes(option)) {
-            setSelected(selected.filter(item => item !== option));
+    const toggleOption = (optionId) => {
+        if (selected.includes(optionId)) {
+            setSelected(selected.filter(id => id !== optionId));
         } else {
-            setSelected([...selected, option]);
+            setSelected([...selected, optionId]);
         }
     };
 
@@ -31,12 +31,13 @@ export default function FilterModal({ isOpen, onClose, title, options, initialSe
         onClose();
     };
 
-    // Filtramos opciones basadas en lo que el usuario tipeó
-    const filteredOptions = options.filter(option => {
-        const isObject = typeof option === 'object' && option !== null;
-        const label = isObject ? option.label : option;
-        return String(label).toLowerCase().includes(searchTerm.toLowerCase());
-    });
+    // Validación defensiva: filtramos opciones válidas primero
+    const validOptions = options?.filter(opt => opt?.id && opt?.label) ?? [];
+    
+    // Filtramos opciones basadas en lo que el usuario tipeó (comparando contra label)
+    const filteredOptions = validOptions.filter(option => 
+        option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -72,29 +73,23 @@ export default function FilterModal({ isOpen, onClose, title, options, initialSe
                 {/* Cuerpo - Lista Scrolleable */}
                 <div className="p-6 overflow-y-auto flex-1">
                     <div className="flex flex-col gap-3">
-                        {filteredOptions.map((option, index) => {
-                            const isObject = typeof option === 'object' && option !== null;
-                            const label = isObject ? option.label : option;
-                            const value = isObject ? option.value : option;
-                            
-                            return (
-                                <label 
-                                    key={index} 
-                                    className="group flex items-center gap-3 p-3 rounded-xl hover:bg-stone-50 cursor-pointer transition-colors border border-transparent hover:border-stone-200"
-                                >
-                                    <div className="relative flex items-center justify-center">
-                                        <input 
-                                            type="checkbox"
-                                            checked={selected.includes(value)}
-                                            onChange={() => toggleOption(value)}
-                                            className="peer w-5 h-5 rounded border border-stone-300 appearance-none checked:bg-sky-500 checked:border-sky-500 cursor-pointer transition-all group-hover:border-sky-500"
-                                        />
-                                        <FaCheck className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
-                                    </div>
-                                    <span className="text-stone-600 font-medium cursor-pointer group-hover:text-sky-600 transition-colors">{label}</span>
-                                </label>
-                            );
-                        })}
+                        {filteredOptions.map((option) => (
+                            <label 
+                                key={option.id} 
+                                className="group flex items-center gap-3 p-3 rounded-xl hover:bg-stone-50 cursor-pointer transition-colors border border-transparent hover:border-stone-200"
+                            >
+                                <div className="relative flex items-center justify-center">
+                                    <input 
+                                        type="checkbox"
+                                        checked={selected.includes(option.id)}
+                                        onChange={() => toggleOption(option.id)}
+                                        className="peer w-5 h-5 rounded border border-stone-300 appearance-none checked:bg-sky-500 checked:border-sky-500 cursor-pointer transition-all group-hover:border-sky-500"
+                                    />
+                                    <FaCheck className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+                                </div>
+                                <span className="text-stone-600 font-medium cursor-pointer group-hover:text-sky-600 transition-colors">{option.label}</span>
+                            </label>
+                        ))}
                         {filteredOptions.length === 0 && (
                             <p className="text-stone-400 text-center py-4">No se encontraron resultados.</p>
                         )}
