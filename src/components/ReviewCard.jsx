@@ -60,7 +60,7 @@ export default function ReviewCard({
         return <ReviewCardSkeleton />;
     }
 
-    const { rating, positive_comment, constructive_comment, created_at, tags = [] } = review;
+    const { rating, positive_comment, constructive_comment, created_at, tags = [], nickname = 'Anónimo' } = review;
     const relativeDate = formatRelativeDate(created_at);
 
     return (
@@ -130,6 +130,13 @@ export default function ReviewCard({
                         </p>
                     </div>
                 )}
+            </div>
+
+            {/* Autor de la reseña */}
+            <div className="flex justify-end mt-4 pt-3 border-t border-stone-100">
+                <span className="text-sm text-stone-400">
+                    Publicado por <span className="font-medium text-stone-500">{nickname}</span>
+                </span>
             </div>
         </div>
     );

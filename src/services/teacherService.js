@@ -161,6 +161,9 @@ export const getTeacherReviews = async (teacherSubjectId) => {
                 constructive_comment,
                 created_at,
                 user_id,
+                Users:user_id (
+                    nickname
+                ),
                 Reviews_Tags (
                     tag_id,
                     Tags:tag_id (
@@ -174,9 +177,10 @@ export const getTeacherReviews = async (teacherSubjectId) => {
 
         if (error) throw error;
 
-        // Mapear para simplificar estructura de tags
+        // Mapear para simplificar estructura de tags y extraer nickname
         const mappedData = (data || []).map(review => ({
             ...review,
+            nickname: review.Users?.nickname || 'Anónimo',
             tags: review.Reviews_Tags
                 ?.map(rt => rt.Tags)
                 .filter(Boolean) || []
