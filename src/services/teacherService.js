@@ -161,6 +161,7 @@ export const getTeacherReviews = async (teacherSubjectId) => {
                 constructive_comment,
                 created_at,
                 user_id,
+                helpful_score,
                 Users:user_id (
                     nickname
                 ),
@@ -181,6 +182,7 @@ export const getTeacherReviews = async (teacherSubjectId) => {
         const mappedData = (data || []).map(review => ({
             ...review,
             nickname: review.Users?.nickname || 'Anónimo',
+            helpful_score: review.helpful_score || 0,
             tags: review.Reviews_Tags
                 ?.map(rt => rt.Tags)
                 .filter(Boolean) || []
@@ -190,6 +192,68 @@ export const getTeacherReviews = async (teacherSubjectId) => {
 
     } catch (error) {
         console.error("[teacherService > getTeacherReviews] Error:", error.message);
+        throw error;
+    }
+};
+
+// ============ VOTING FUNCTIONS ============
+
+// Obtener el voto del usuario actual para una reseña
+export const getUserVote = async (reviewId, userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('Review_Votes')
+            .select('vote_value')
+            .eq('review_id', reviewId)
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (error) throw error;
+        return data?.vote_value || null;
+
+    } catch (error) {
+        console.error("[teacherService > getUserVote] Error:", error.message);
+        return null;
+    }
+};
+
+// Insertar o actualizar voto (upsert)
+export const submitVote = async (reviewId, userId, value) => {
+    try {
+        const { data, error } = await supabase
+            .from('Review_Votes')
+            .upsert({
+                review_id: reviewId,
+                user_id: userId,
+                vote_value: value
+            }, {
+                onConflict: 'review_id,user_id'
+            })
+            .select();
+
+        if (error) throw error;
+        return data;
+
+    } catch (error) {
+        console.error("[teacherService > submitVote] Error:", error.message);
+        throw error;
+    }
+};
+
+// Eliminar voto
+export const deleteVote = async (reviewId, userId) => {
+    try {
+        const { error } = await supabase
+            .from('Review_Votes')
+            .delete()
+            .eq('review_id', reviewId)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return true;
+
+    } catch (error) {
+        console.error("[teacherService > deleteVote] Error:", error.message);
         throw error;
     }
 };
