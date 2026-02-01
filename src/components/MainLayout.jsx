@@ -4,6 +4,7 @@ import Header from "./Header";
 import MobileMenu from "./MobileMenu";
 import AuthShell from "./Auth/AuthShell";
 import AuthGuard from "./AuthGuard";
+import ScrollButton from "./common/ScrollButton";
 
 export default function MainLayout() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,8 +19,10 @@ export default function MainLayout() {
                 <div className="grow">
                     <Outlet />
                 </div>
+                <ScrollButton />
             </div>
             <AuthShell />
         </AuthGuard>
     );
 }
+
