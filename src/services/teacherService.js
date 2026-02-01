@@ -1,3 +1,39 @@
+/**
+ * ============================================================================================
+ * TEACHER SERVICE
+ * ============================================================================================
+ * 
+ * NATURALEZA:
+ *   Servicio especializado en el descubrimiento y búsqueda global de profesores.
+ *   Este módulo proporciona las funciones necesarias para explorar el catálogo completo
+ *   de profesores y obtener los filtros disponibles para la interfaz de búsqueda.
+ * 
+ * RESPONSABILIDADES:
+ *   - Proporcionar catálogos de filtros para modales de búsqueda
+ *   - Ejecutar búsquedas paginadas con filtros múltiples
+ *   - Manejar reintentos automáticos con backoff exponencial
+ * 
+ * TAREAS ESPECÍFICAS:
+ *   1. getDistinctFilters   → Consulta las tablas maestro (Teachers, Subjects, Universities)
+ *                             para obtener listas de opciones formateadas como { id, label }
+ *                             Ordena alfabéticamente cada categoría
+ * 
+ *   2. getTeacherSummary    → Motor de búsqueda principal que consulta la vista 'teacher_summary'
+ *                             Soporta:
+ *                             - Búsqueda por texto (nombre, materia, universidad)
+ *                             - Filtros por IDs (university_ids, subject_ids, teacher_ids)
+ *                             - Paginación con conteo total
+ *                             - Reintentos automáticos (hasta 4 intentos con timeout progresivo)
+ *                             - Ordenamiento por total de reseñas (descendente)
+ * 
+ * DEPENDENCIAS:
+ *   - Supabase Client (../supabaseClient)
+ *   - Tablas: Teachers, Subjects, Universities
+ *   - Vista: teacher_summary
+ * 
+ * ============================================================================================
+ */
+
 import { supabase } from '../supabaseClient';
 
 // Obtener filtros únicos para los modales:
@@ -122,138 +158,5 @@ export const getTeacherSummary = async ({ page = 1, pageSize = 12, searchTerm = 
     } catch (err) {
         console.error("[teacherService < getTeacherSummary] Error de consulta:", err.message);
         throw err;
-    }
-};
-
-// Obtener información de cabecera del profesor para la página de detalle:
-export const getTeacherHeaderInfo = async (teacherSubjectId) => {
-    try {
-        console.log(`[teacherService > getTeacherHeaderInfo] Fetching header para: ${teacherSubjectId}`);
-
-        const { data, error } = await supabase
-            .from('teacher_summary')
-            .select('teacher_subject_id, full_name, university, subject_name, average_rating, total_reviews')
-            .eq('teacher_subject_id', teacherSubjectId)
-            .single();
-
-        if (error) throw error;
-
-        return data;
-
-    } catch (error) {
-        console.error("[teacherService > getTeacherHeaderInfo] Error:", error.message);
-        throw error;
-    }
-};
-
-// Obtener todas las reseñas de un profesor/materia con sus tags:
-export const getTeacherReviews = async (teacherSubjectId) => {
-    try {
-        console.log(`[teacherService > getTeacherReviews] Fetching reviews para: ${teacherSubjectId}`);
-
-        const { data, error } = await supabase
-            .from('Reviews')
-            .select(`
-                id,
-                teacher_subject_id,
-                rating,
-                positive_comment,
-                constructive_comment,
-                created_at,
-                user_id,
-                helpful_score,
-                Users:user_id (
-                    nickname
-                ),
-                Reviews_Tags (
-                    tag_id,
-                    Tags:tag_id (
-                        id,
-                        name
-                    )
-                )
-            `)
-            .eq('teacher_subject_id', teacherSubjectId)
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Mapear para simplificar estructura de tags y extraer nickname
-        const mappedData = (data || []).map(review => ({
-            ...review,
-            nickname: review.Users?.nickname || 'Anónimo',
-            helpful_score: review.helpful_score || 0,
-            tags: review.Reviews_Tags
-                ?.map(rt => rt.Tags)
-                .filter(Boolean) || []
-        }));
-
-        return mappedData;
-
-    } catch (error) {
-        console.error("[teacherService > getTeacherReviews] Error:", error.message);
-        throw error;
-    }
-};
-
-// ============ VOTING FUNCTIONS ============
-
-// Obtener el voto del usuario actual para una reseña
-export const getUserVote = async (reviewId, userId) => {
-    try {
-        const { data, error } = await supabase
-            .from('Review_Votes')
-            .select('vote_value')
-            .eq('review_id', reviewId)
-            .eq('user_id', userId)
-            .maybeSingle();
-
-        if (error) throw error;
-        return data?.vote_value || null;
-
-    } catch (error) {
-        console.error("[teacherService > getUserVote] Error:", error.message);
-        return null;
-    }
-};
-
-// Insertar o actualizar voto (upsert)
-export const submitVote = async (reviewId, userId, value) => {
-    try {
-        const { data, error } = await supabase
-            .from('Review_Votes')
-            .upsert({
-                review_id: reviewId,
-                user_id: userId,
-                vote_value: value
-            }, {
-                onConflict: 'review_id,user_id'
-            })
-            .select();
-
-        if (error) throw error;
-        return data;
-
-    } catch (error) {
-        console.error("[teacherService > submitVote] Error:", error.message);
-        throw error;
-    }
-};
-
-// Eliminar voto
-export const deleteVote = async (reviewId, userId) => {
-    try {
-        const { error } = await supabase
-            .from('Review_Votes')
-            .delete()
-            .eq('review_id', reviewId)
-            .eq('user_id', userId);
-
-        if (error) throw error;
-        return true;
-
-    } catch (error) {
-        console.error("[teacherService > deleteVote] Error:", error.message);
-        throw error;
     }
 };

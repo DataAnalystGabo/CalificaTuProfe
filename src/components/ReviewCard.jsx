@@ -5,7 +5,7 @@ import { TbArrowBigUpLines, TbArrowBigDownLines } from "react-icons/tb";
 import PillBadge from "./PillBadge";
 import { getTagConfig } from "../utils/tagIcons";
 import { formatRelativeDate } from "../utils/formatDate";
-import { getUserVote, submitVote, deleteVote } from "../services/teacherService";
+import { getUserVote, submitVote, deleteVote } from "../services/reviewService";
 import { useAuth } from "../context/AuthContext";
 
 // Componente de estrellas (pequeño para las cards)

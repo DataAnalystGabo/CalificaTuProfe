@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getTeacherHeaderInfo, getTeacherReviews } from "../services/teacherService";
+import { getTeacherHeaderInfo, getTeacherReviews } from "../services/reviewService";
 import TeacherHeader from "../components/TeacherHeader";
 import ReviewCard from "../components/ReviewCard";
 import { IoArrowBack } from "react-icons/io5";
