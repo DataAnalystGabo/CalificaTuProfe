@@ -71,7 +71,11 @@ export const getTeacherReviews = async (teacherSubjectId) => {
             .select(`
                 id,
                 teacher_subject_id,
-                rating,
+                clarity_rating,
+                kindness_rating,
+                difficulty_rating,
+                availability_rating,
+                material_rating,
                 positive_comment,
                 constructive_comment,
                 created_at,

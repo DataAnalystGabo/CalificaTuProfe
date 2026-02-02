@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { IoIosStar, IoIosStarHalf, IoIosStarOutline } from "react-icons/io";
 import { AiOutlineLike, AiOutlineDislike } from "react-icons/ai";
 import { TbArrowBigUpLines, TbArrowBigDownLines } from "react-icons/tb";
 import PillBadge from "./PillBadge";
@@ -8,28 +7,50 @@ import { formatRelativeDate } from "../utils/formatDate";
 import { getUserVote, submitVote, deleteVote } from "../services/reviewService";
 import { useAuth } from "../context/AuthContext";
 
-// Componente de estrellas (pequeño para las cards)
-const StarRating = ({ rating = 0, maxRating = 5 }) => {
-    const stars = [];
+// Mapeo de categorías con labels en español
+const RATING_CATEGORIES = [
+    { key: 'clarity_rating', label: 'Claridad' },
+    { key: 'kindness_rating', label: 'Amabilidad' },
+    { key: 'difficulty_rating', label: 'Dificultad' },
+    { key: 'availability_rating', label: 'Disponibilidad' },
+    { key: 'material_rating', label: 'Material' }
+];
 
-    for (let i = 1; i <= maxRating; i++) {
-        let StarIcon = IoIosStarOutline;
-        let starColor = "text-stone-300";
+// Helper para obtener color según el valor del rating
+const getRatingColor = (value) => {
+    if (value <= 2) return 'bg-orange-400';
+    if (value === 3) return 'bg-amber-200';
+    return 'bg-emerald-400';
+};
 
-        if (rating >= i) {
-            StarIcon = IoIosStar;
-            starColor = "text-yellow-400";
-        } else if (rating >= i - 0.5) {
-            StarIcon = IoIosStarHalf;
-            starColor = "text-yellow-400";
-        }
+// Componente de barras de rating por categoría
+const RatingBarsBreakdown = ({ ratings }) => {
+    return (
+        <div className="flex flex-col gap-2">
+            {RATING_CATEGORIES.map(({ key, label }) => {
+                const value = ratings[key] || 0;
+                const widthPercent = (value / 5) * 100;
+                const colorClass = getRatingColor(value);
 
-        stars.push(
-            <StarIcon key={i} className={`h-4 w-4 ${starColor}`} />
-        );
-    }
-
-    return <div className="flex space-x-0.5">{stars}</div>;
+                return (
+                    <div key={key} className="flex items-center gap-3">
+                        <span className="text-sm text-stone-600 w-24 shrink-0">
+                            {label}
+                        </span>
+                        <div className="flex-1 h-2 bg-stone-200 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full ${colorClass} rounded-full transition-all`}
+                                style={{ width: `${widthPercent}%` }}
+                            />
+                        </div>
+                        <span className="text-xs font-semibold text-stone-600 w-6 text-right">
+                            {value.toFixed(1)}
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
+    );
 };
 
 // Skeleton para la card
@@ -74,7 +95,11 @@ export default function ReviewCard({
     // Extraer datos del review
     const { 
         id: reviewId,
-        rating, 
+        clarity_rating,
+        kindness_rating,
+        difficulty_rating,
+        availability_rating,
+        material_rating,
         positive_comment, 
         constructive_comment, 
         created_at, 
@@ -82,6 +107,15 @@ export default function ReviewCard({
         nickname = 'Anónimo',
         helpful_score = 0 
     } = review || {};
+
+    // Agrupar ratings para el componente de barras
+    const ratings = {
+        clarity_rating,
+        kindness_rating,
+        difficulty_rating,
+        availability_rating,
+        material_rating
+    };
 
     // Inicializar score y cargar voto del usuario
     useEffect(() => {
@@ -195,19 +229,16 @@ export default function ReviewCard({
 
                 {/* Review Content */}
                 <div className="flex-1">
-                    {/* Header: Rating y Fecha */}
-                    <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-auto flex flex-row px-3 py-0.5 gap-2 items-center justify-center bg-stone-50 rounded-2xl border border-stone-400">
-                                <span className="font-bold text-stone-600">
-                                    {Number(rating).toFixed(1)}
-                                </span>
-                                <StarRating rating={rating} />
-                            </div>
-                        </div>
+                    {/* Header: Fecha */}
+                    <div className="flex justify-end mb-4">
                         <span className="text-sm text-stone-400">
                             {relativeDate}
                         </span>
+                    </div>
+
+                    {/* Rating Bars Breakdown */}
+                    <div className="mb-4 p-3 bg-white rounded-lg border border-stone-200">
+                        <RatingBarsBreakdown ratings={ratings} />
                     </div>
 
                     {/* Tags */}
