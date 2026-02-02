@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
 
     // Indica si la sesión está lista para queries a Supabase:
     const [sessionReady, setSessionReady] = useState(false);
+    const sessionReadyRef = useRef(false);
 
     // Ref para evitar procesar eventos duplicados:
     const eventProcessedRef = useRef(false);
@@ -119,6 +120,7 @@ export const AuthProvider = ({ children }) => {
                     // Caso F5 con cache válido: usar cache inmediatamente, no fetch
                     if (event === 'INITIAL_SESSION' && hasCompleteProfile(cachedUser)) {
                         console.log("[AuthContext] F5 con cache válido - sin fetch");
+                        sessionReadyRef.current = true;
                         setSessionReady(true);
                         setLoading(false);
                         eventProcessedRef.current = true;
@@ -145,6 +147,7 @@ export const AuthProvider = ({ children }) => {
                             status: cachedUser?.status || 'active'
                         };
                         updateUser(basicUser);
+                        sessionReadyRef.current = true;
                         setSessionReady(true);
                         setLoading(false);
 
@@ -164,16 +167,18 @@ export const AuthProvider = ({ children }) => {
                 // Sin sesión y sin cache: estado limpio
                 if (!session && !cachedUser) {
                     console.log("[AuthContext] Sin sesión ni cache");
+                    sessionReadyRef.current = true;
                     setSessionReady(true);
                     setLoading(false);
                 }
             }
         );
 
-        // Timeout de seguridad:
+        // Timeout de seguridad: solo ejecutar si aún no está ready
         const timeoutId = setTimeout(() => {
-            if (mounted && !eventProcessedRef.current) {
+            if (mounted && !sessionReadyRef.current) {
                 console.warn("[AuthContext] Timeout - forzando ready");
+                sessionReadyRef.current = true;
                 setSessionReady(true);
                 setLoading(false);
             }
